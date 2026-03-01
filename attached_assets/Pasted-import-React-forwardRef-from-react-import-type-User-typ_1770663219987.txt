@@ -1,0 +1,150 @@
+import React, { forwardRef } from "react";
+import { type User, type Indicator, type Criterion } from "@shared/schema";
+import { format } from "date-fns";
+import { arSA } from "date-fns/locale";
+
+interface PrintableCharterProps {
+  user: User;
+  goals: (Indicator & { criteria: Criterion[] })[];
+  competencies: (Indicator & { criteria: Criterion[] })[];
+}
+
+export const PrintableCharter = forwardRef<HTMLDivElement, PrintableCharterProps>(
+  ({ user, goals, competencies }, ref) => {
+    
+    // حساب المجموع النهائي
+    const goalsWeight = goals.reduce((acc, curr) => acc + curr.weight, 0);
+    const competenciesWeight = competencies.reduce((acc, curr) => acc + curr.weight, 0);
+    const totalScore = goalsWeight + competenciesWeight; // هذا مثال مبسط، المعادلة الحقيقية تعتمد على حالة الاعتماد
+
+    return (
+      <div ref={ref} className="p-8 bg-white text-black print:p-0" dir="rtl">
+        {/* الترويسة الرسمية */}
+        <div className="flex justify-between items-center border-b-2 border-black pb-4 mb-6">
+          <div className="text-center">
+            <h1 className="text-xl font-bold">المملكة العربية السعودية</h1>
+            <h2 className="text-lg">وزارة التعليم</h2>
+            <h3 className="text-md">ميثاق الأداء الوظيفي لشاغلي الوظائف التعليمية</h3>
+          </div>
+          <div className="w-24 h-24 border border-gray-300 flex items-center justify-center rounded-full">
+            {/* مكان الشعار */}
+            <span className="text-xs text-gray-500">شعار الوزارة</span>
+          </div>
+        </div>
+
+        {/* بيانات المعلم */}
+        <div className="grid grid-cols-2 gap-4 mb-8 bg-gray-50 p-4 rounded border border-gray-200 print:bg-transparent print:border-black">
+          <div>
+            <span className="font-bold ml-2">الاسم الرباعي:</span>
+            <span>{user.fullNameArabic || user.username}</span>
+          </div>
+          <div>
+            <span className="font-bold ml-2">الرقم الوظيفي/السجل:</span>
+            <span>{user.jobNumber || "---"}</span>
+          </div>
+          <div>
+            <span className="font-bold ml-2">المدرسة:</span>
+            <span>{user.schoolName || "---"}</span>
+          </div>
+          <div>
+            <span className="font-bold ml-2">التخصص:</span>
+            <span>{user.specialization || "---"}</span>
+          </div>
+          <div>
+            <span className="font-bold ml-2">تاريخ الطباعة:</span>
+            <span>{format(new Date(), "PP", { locale: arSA })}</span>
+          </div>
+        </div>
+
+        {/* القسم الأول: الأهداف الوظيفية */}
+        <div className="mb-8">
+          <h3 className="text-lg font-bold bg-gray-200 p-2 border border-black mb-0 print:bg-gray-100">
+            أولاً: الأهداف الوظيفية (الوزن النسبي المقترح: 40%)
+          </h3>
+          <table className="w-full border-collapse border border-black text-sm">
+            <thead>
+              <tr className="bg-gray-100 print:bg-gray-50">
+                <th className="border border-black p-2 w-1/12">م</th>
+                <th className="border border-black p-2 w-4/12">الهدف (المؤشر)</th>
+                <th className="border border-black p-2 w-3/12">نتاجات الأداء (المعيار)</th>
+                <th className="border border-black p-2 w-1/12">الوزن</th>
+                <th className="border border-black p-2 w-2/12">الحالة</th>
+              </tr>
+            </thead>
+            <tbody>
+              {goals.map((goal, index) => (
+                <tr key={goal.id}>
+                  <td className="border border-black p-2 text-center">{index + 1}</td>
+                  <td className="border border-black p-2 font-bold">{goal.title}</td>
+                  <td className="border border-black p-2">
+                    <ul className="list-disc list-inside">
+                      {goal.criteria.map((c) => (
+                        <li key={c.id}>{c.description}</li>
+                      ))}
+                    </ul>
+                  </td>
+                  <td className="border border-black p-2 text-center">{goal.weight}%</td>
+                  <td className="border border-black p-2 text-center">{goal.status === 'approved' ? 'معتمد' : 'قيد المراجعة'}</td>
+                </tr>
+              ))}
+              {goals.length === 0 && (
+                <tr><td colSpan={5} className="border border-black p-4 text-center">لا توجد أهداف مدخلة</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* القسم الثاني: الجدارات */}
+        <div className="mb-8">
+          <h3 className="text-lg font-bold bg-gray-200 p-2 border border-black mb-0 print:bg-gray-100">
+            ثانياً: الجدارات المهنية (الوزن النسبي المقترح: 60%)
+          </h3>
+          <table className="w-full border-collapse border border-black text-sm">
+            <thead>
+              <tr className="bg-gray-100 print:bg-gray-50">
+                <th className="border border-black p-2 w-1/12">م</th>
+                <th className="border border-black p-2 w-2/12">المجال</th>
+                <th className="border border-black p-2 w-5/12">الجدارة</th>
+                <th className="border border-black p-2 w-1/12">الوزن</th>
+                <th className="border border-black p-2 w-2/12">التقييم</th>
+              </tr>
+            </thead>
+            <tbody>
+              {competencies.map((comp, index) => (
+                <tr key={comp.id}>
+                  <td className="border border-black p-2 text-center">{index + 1}</td>
+                  <td className="border border-black p-2">{comp.domain || "عام"}</td>
+                  <td className="border border-black p-2 font-bold">{comp.title}</td>
+                  <td className="border border-black p-2 text-center">{comp.weight}%</td>
+                  <td className="border border-black p-2 text-center">
+                     {/* التقييم يتم يدوياً من المدير عادة */}
+                     ____ / {comp.weight}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* التوقيعات */}
+        <div className="mt-16 grid grid-cols-3 gap-8 text-center break-inside-avoid">
+          <div>
+            <p className="font-bold mb-8">المعلم/ـة</p>
+            <p>.............................</p>
+          </div>
+          <div>
+            <p className="font-bold mb-8">المدير المباشر</p>
+            <p>.............................</p>
+            <p className="text-xs mt-2">الختم</p>
+          </div>
+          <div>
+            <p className="font-bold mb-8">الاعتماد (مدير المكتب/المشرف)</p>
+            <p>.............................</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+);
+
+PrintableCharter.displayName = "PrintableCharter";

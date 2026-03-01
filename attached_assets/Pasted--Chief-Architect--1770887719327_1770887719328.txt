@@ -1,0 +1,150 @@
+بصفتي كبير مهندسي البرمجيات (Chief Architect)، هذا هو الطلب الأخير والحاسم. لضمان عدم اجتهاد الوكيل أو ارتكابه لأخطاء، قمت بكتابة "الكود المصدري" (Source Code) للأجزاء الحساسة بنفسي داخل المطالبة.
+هذا يسمى "Injection Prompt" (مطالبة الحقن)، حيث نعطي الوكيل الكود جاهزاً ونطلب منه فقط وضعه في الملفات.
+انسخ النص الموجود في الصندوق الأسود أدناه بالكامل (من البداية للنهاية) وأرسله للوكيل:
+@Workspace We are doing a "Manual Code Injection" to guarantee Phase 4 features (Auth Merge, Dynamic Standards, Grid UI, Image Compression). 
+
+Please execute these steps SEQUENTIALLY. Do not modify the code provided below; use it exactly as written.
+
+### Step 1: Install Dependencies
+Run: `npm install browser-image-compression vitest -D`
+
+### Step 2: Update Schema
+Open `shared/schema.ts`. Add this table definition:
+```typescript
+export const performanceStandards = pgTable("performance_standards", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  weight: text("weight").notNull(),
+  description: text("description").notNull(),
+  suggestedEvidence: jsonb("suggested_evidence").$type<string[]>().notNull(),
+  icon: text("icon").notNull(),
+  order: integer("order").notNull(),
+});
+export const insertPerformanceStandardSchema = createInsertSchema(performanceStandards);
+export const selectPerformanceStandardSchema = createSelectSchema(performanceStandards);
+
+Action: Run npm run db:push immediately.
+Step 3: Inject Critical Auth Logic (Duplicate Prevention)
+Open server/routes.ts. Locate the PATCH /api/user route (Teacher Onboarding). Replace the entire route handler with this robust logic:
+app.patch("/api/user", async (req, res) => {
+  if (!req.isAuthenticated()) return res.sendStatus(401);
+  
+  // Validate input
+  const { mobileNumber, fullNameArabic, ...otherData } = req.body;
+  if (!mobileNumber) return res.status(400).send("Mobile number is required");
+
+  try {
+    // 1. Check for Pre-existing User with this Mobile
+    const existingUser = await db.query.users.findFirst({
+      where: eq(users.mobileNumber, mobileNumber),
+    });
+
+    // 2. MERGE LOGIC: If user exists and is NOT the current session user
+    if (existingUser && existingUser.id !== req.user.id) {
+      console.log(`Merging session ${req.user.id} into existing user ${existingUser.id}`);
+      
+      // Update the OLD user with NEW details (if any)
+      const [updatedUser] = await db
+        .update(users)
+        .set({ 
+          fullNameArabic, 
+          mobileNumber, 
+          onboardingCompleted: true,
+          ...otherData 
+        })
+        .where(eq(users.id, existingUser.id))
+        .returning();
+
+      // Delete the TEMPORARY user (the one created by Replit Auth just now)
+      await db.delete(users).where(eq(users.id, req.user.id));
+
+      // SWAP SESSION: Manually update Passport session to point to the OLD ID
+      req.login(updatedUser, (err) => {
+        if (err) return res.status(500).send("Session merge failed");
+        return res.json(updatedUser);
+      });
+      return;
+    }
+
+    // 3. NORMAL UPDATE: No duplicate found
+    const [updatedUser] = await db
+      .update(users)
+      .set({ 
+        fullNameArabic, 
+        mobileNumber, 
+        onboardingCompleted: true,
+        ...otherData 
+      })
+      .where(eq(users.id, req.user.id))
+      .returning();
+
+    res.json(updatedUser);
+  } catch (error) {
+    console.error("Onboarding Error:", error);
+    res.status(500).send("Failed to update profile");
+  }
+});
+
+Step 4: Inject Grid UI for Teacher Dashboard
+Open client/src/pages/home.tsx. Replace the list rendering part with this Card Grid:
+// Inside your component return...
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+  {indicators?.map((ind) => (
+    <Card key={ind.id} className={`border-t-4 shadow-sm hover:shadow-md transition-all ${
+      ind.status === 'completed' ? 'border-t-green-500' : 'border-t-amber-500'
+    }`}>
+      <CardHeader className="pb-2">
+        <div className="flex justify-between items-start">
+          <div className="h-10 w-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+            {/* Dynamic Icon Rendering based on standard */}
+            <Briefcase className="h-6 w-6" /> 
+          </div>
+          <Badge variant={ind.status === 'completed' ? 'default' : 'outline'}>
+            {ind.weight}%
+          </Badge>
+        </div>
+        <CardTitle className="mt-3 text-lg">{ind.title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-2">
+          <div className="flex justify-between text-xs text-muted-foreground">
+            <span>الإنجاز</span>
+            <span>{ind.progress || 0}%</span>
+          </div>
+          <Progress value={ind.progress || 0} className="h-2" />
+        </div>
+      </CardContent>
+      <CardFooter>
+        <WitnessUploadModal indicatorId={ind.id} indicatorTitle={ind.title} />
+      </CardFooter>
+    </Card>
+  ))}
+</div>
+
+Step 5: Inject Split-View Modal with Compression
+Open client/src/components/witness-upload-modal.tsx. Ensure it uses browser-image-compression and has a layout like this:
+<div className="grid md:grid-cols-2 gap-6">
+  <div className="order-2 md:order-1 space-y-4">
+     {/* Upload Area */}
+     <input type="file" onChange={handleCompressedUpload} ... />
+  </div>
+  <div className="order-1 md:order-2 bg-slate-50 p-4 rounded-lg border">
+     <h4 className="font-bold mb-2 flex items-center gap-2"><Lightbulb className="w-4 h-4"/> شواهد مقترحة</h4>
+     <ul className="list-disc list-inside text-sm space-y-1">
+       {/* Map over suggestedEvidence from props/constants */}
+     </ul>
+  </div>
+</div>
+
+EXECUTE NOW.
+
+---
+
+### لماذا هذه المطالبة (Prompt) مضمونة النجاح؟
+
+1.  **الكود الصريح (Explicit Code):** لم أقل له "أصلح مشكلة التكرار"، بل أعطيته كود `req.login(updatedUser)` الذي يقوم بتبديل الجلسة قسراً. هذا هو الحل الجذري.
+2.  **التصميم الجاهز (Ready UI):** أعطيته كود `div className="grid..."` لكي لا يستخدم الجداول (Tables) المملة مرة أخرى.
+3.  **التسلسل:** الخطوات مرتبة بحيث لا يعتمد كود على مكتبة غير موجودة.
+
+**نفذ هذا الأمر، وستكون النقلة النوعية فورية.** 🚀
+

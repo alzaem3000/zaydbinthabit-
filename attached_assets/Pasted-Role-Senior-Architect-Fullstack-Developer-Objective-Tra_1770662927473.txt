@@ -1,0 +1,47 @@
+Role: Senior Architect & Fullstack Developer
+Objective: Transform the app into a "Saudi Ministry-Compliant" Performance Management System.
+Priorities: Professional Onboarding, Official Terminology (Charter), and Data Integrity.
+
+---
+
+### Phase 1: Professional Onboarding & User Schema (UX Focus)
+Action: Enhance User Profile and Registration Flow.
+1.  **Update `users` table in `shared/schema.ts`:**
+    * Add fields: `job_number` (text, unique), `specialization` (text), `school_name` (text), `full_name_arabic` (text).
+2.  **Create Onboarding Component:**
+    * Create `client/src/pages/onboarding.tsx`.
+    * Design a clean, professional form asking for the new fields above.
+    * Use Zod for validation (e.g., Job Number must be numeric).
+3.  **Implement Middleware Logic:**
+    * In `client/src/App.tsx`, check if the logged-in user has a `job_number`.
+    * If NOT, strictly redirect to `/onboarding` (blocking access to dashboard until completed).
+
+### Phase 2: Charter Data Structure (Official Alignment)
+Action: Align `indicators` table with "Job Performance Charter" (ميثاق الأداء).
+1.  **Modify `indicators` table:**
+    * Add `type`: text (enum: 'goal', 'competency') - required.
+    * Add `weight`: integer (1-100) - required.
+    * Add `domain`: text (values: 'values', 'knowledge', 'practice') - for competencies.
+    * Add `target_output`: text - for goals.
+2.  **Migration Script:**
+    * Create a script to update existing records: Set default `type='goal'` and `weight=0` to prevent crashes.
+
+### Phase 3: Teacher Dashboard Refactoring (Visual Hierarchy)
+Action: Redesign `home.tsx` to separate Goals from Competencies.
+1.  **Tabs Layout:** Use Radix Tabs to split the view: "Functional Performance (الأهداف)" vs "Competencies (الجدارات)".
+2.  **Validation:**
+    * Show a "Total Weight" progress bar.
+    * Warning alert if Total Weight !== 100%.
+
+### Phase 4: Official Reporting (Print Feature)
+Action: Implement "Printable Charter" capability.
+1.  **Install:** `npm install react-to-print`
+2.  **Create Component:** `client/src/components/PrintableCharter.tsx` (I will provide the exact code for this in the next prompt, please ask me for it).
+3.  **Integration:** Add a "Print Official Report" button in the Dashboard header.
+
+---
+
+**Strict Constraints:**
+* **Localization:** All UI labels MUST be in formal Arabic (e.g., use "السجل المدني" instead of "Job Num").
+* **UX:** Ensure the Onboarding page looks professional (Ministry colors: #006C35).
+* **Security:** Ensure teachers cannot edit "Competencies" weights if they are fixed by the system.

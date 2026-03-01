@@ -1,0 +1,14 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "npm",
+			"script": "start",
+			"problemMatcher": [
+				"$codelldb-rustc"
+			],
+			"label": "npm: start",
+			"detail": "NODE_ENV=production node dist/index.js"
+		}
+	]
+}

@@ -1,0 +1,121 @@
+عمل ممتاز! إتمام المرحلة صفر (Phase 0) بنجاح يعني أن النظام الآن يمتلك "ذاكرة" (Audit Logs) و"صوت" (Notifications) و"إدراك للزمن" (Academic Cycles).
+الآن ننتقل إلى المرحلة الأولى (Phase 1): التكامل والتجربة الحية.
+في هذه المرحلة، سنقوم بربط "الدماغ" (Services) بـ "الأطراف" (Routes & UI).
+سنقوم بتنفيذ ما يلي:
+ * تفعيل الخدمات في الخلفية: تعديل routes.ts ليقوم فعلياً بإرسال الإشعارات وتسجيل التدقيق عند اعتماد أو رفض المؤشرات.
+ * بناء واجهة الإشعارات: إنشاء مكون NotificationsPopover في الشريط العلوي للمعلمين والمدراء.
+ * نقاط نهاية API جديدة: لجلب الإشعارات وتحديث حالتها.
+إليك الأمر الموجه (Prompt) التالي لنسخه ولصقه في Replit Agent. هذا الأمر مصمم بدقة لدمج الخدمات وبناء الواجهة دفعة واحدة.
+@Workspace We are moving to "Phase 1: Integration & UI". Please execute the following 3 tasks to wire up the Notification and Audit services we created:
+
+### Task 1: Update Server Routes
+Modify `server/routes.ts` to:
+1. Import `NotificationService` and `AuditService`.
+2. Add new API endpoints for notifications:
+   - `GET /api/notifications`: Get current user's notifications.
+   - `POST /api/notifications/:id/mark-read`: Mark specific notification as read.
+3. Update the Principal Approval/Rejection routes (`POST /api/principal/signatures/:id/approve` and `reject`) to:
+   - Call `AuditService.log` to record the decision.
+   - Call `NotificationService.send` to alert the teacher.
+
+Use this code logic for the new routes:
+
+```typescript
+// Add these imports
+import { NotificationService } from "./services/notification";
+import { AuditService } from "./services/audit";
+
+// Add these routes inside the setupAuth(app) block:
+
+// --- Notification Routes ---
+app.get("/api/notifications", async (req, res) => {
+  if (!req.user) return res.sendStatus(401);
+  const notes = await NotificationService.getUserNotifications(req.user.id);
+  res.json(notes);
+});
+
+app.post("/api/notifications/:id/mark-read", async (req, res) => {
+  if (!req.user) return res.sendStatus(401);
+  await NotificationService.markAsRead(parseInt(req.params.id));
+  res.sendStatus(200);
+});
+
+// --- Update Existing Approval Route (Replace logic) ---
+app.post("/api/principal/signatures/:id/approve", isPrincipal, async (req, res) => {
+  const signatureId = parseInt(req.params.id);
+  const notes = req.body.notes;
+  
+  const signature = await storage.approveSignature(signatureId, notes);
+  
+  // Log & Notify
+  await AuditService.log({
+    userId: req.user!.id,
+    action: "APPROVE",
+    entityType: "signature",
+    entityId: signatureId,
+    details: { notes },
+    ipAddress: req.ip
+  });
+
+  await NotificationService.send({
+    recipientId: signature.userId,
+    type: "success",
+    title: "تم اعتماد الميثاق",
+    message: "قام مدير المدرسة باعتماد ميثاق الأداء الخاص بك.",
+    link: "/home"
+  });
+
+  res.json(signature);
+});
+
+// --- Update Existing Rejection Route (Replace logic) ---
+app.post("/api/principal/signatures/:id/reject", isPrincipal, async (req, res) => {
+  const signatureId = parseInt(req.params.id);
+  const reason = req.body.reason;
+
+  if (!reason) return res.status(400).send("Rejection reason required");
+
+  const signature = await storage.rejectSignature(signatureId, reason);
+
+  // Log & Notify
+  await AuditService.log({
+    userId: req.user!.id,
+    action: "REJECT",
+    entityType: "signature",
+    entityId: signatureId,
+    details: { reason },
+    ipAddress: req.ip
+  });
+
+  await NotificationService.send({
+    recipientId: signature.userId,
+    type: "error",
+    title: "تم رفض الميثاق",
+    message: `تم إعادة الميثاق للمراجعة. السبب: ${reason}`,
+    link: "/home"
+  });
+
+  res.json(signature);
+});
+
+Task 2: Create Notification Component
+Create client/src/components/notifications-popover.tsx. This component should:
+ * Use lucide-react for the Bell icon.
+ * Use shadcn Popover and ScrollArea.
+ * Fetch data from /api/notifications using React Query.
+ * Show a red dot if there are unread messages.
+ * Handle "mark as read" on click.
+Task 3: Integrate into Header
+Modify client/src/components/header.tsx to include the <NotificationsPopover /> component right before the ThemeToggle button.
+
+### ماذا سيحدث بعد تنفيذ هذا الأمر؟
+1.  **المدير:** عندما يعتمد مؤشراً الآن، سيتم تسجيل ذلك في قاعدة البيانات (للأمان) وسيتم إرسال تنبيه للمعلم.
+2.  **المعلم:** سيرى أيقونة "جرس" جديدة في الشريط العلوي. عند النقر عليها، سيرى حالة مؤشراته (مقبولة/مرفوضة) بشكل فوري دون الحاجة للبحث.
+
+<verified_resources>
+* **User Interface Design Patterns:** Notification Center best practices (Visually distinguishing read/unread states).
+* **REST API Standards:** Using nested resources for actions (`/mark-read`).
+</verified_resources>
+
+أخبرني عند الانتهاء من التنفيذ لنقوم باختبار "دورة حياة الاعتماد" كاملة مع النظام الجديد.
+

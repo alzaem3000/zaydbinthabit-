@@ -1,0 +1,148 @@
+بصفتي كبير مهندسي المعمارية (Chief Architect)، أتفق معك تماماً. صفحة الهبوط (Landing Page) هي "الواجهة الأمامية" للنظام، ويجب أن تعكس الاحترافية والحداثة التي بنيناها في الخلفية.
+لتحويل الصفحة من مجرد "شاشة دخول" إلى "بوابة تفاعلية"، سنعتمد على:
+ * الحركة (Motion): استخدام مكتبة framer-motion لإضافة تأثيرات ظهور ناعمة (Fade-in & Slide-up) تعطي شعوراً بالفخامة.
+ * التصميم البصري (Visual Hierarchy): تقسيم الصفحة إلى (Hero Section) و (Features Grid) لتوضيح القيمة.
+ * الخلفية الحية: استخدام نمط خلفية هادئ (Pattern) بدلاً من اللون المصمت.
+إليك "المطالبة التصميمية" (Design Prompt) الجاهزة للتنفيذ.
+المطالبة الهندسية (Design Prompt)
+انسخ النص البرمجي في الصندوق أدناه وضعه في Replit Agent:
+@Workspace The current landing page is too basic. I need a complete redesign of `client/src/pages/landing.tsx` to make it modern, interactive, and aligned with the Ministry of Education's professional aesthetic.
+
+### Requirements:
+1.  **Libraries:** Use `framer-motion` for smooth entrance animations (already installed). Use `lucide-react` for icons.
+2.  **Layout Structure:**
+    * **Navbar:** Simple transparent header with the Logo/Title and a "Login" button.
+    * **Hero Section:** Centered text with a strong value proposition ("Empowering Teachers, Streamlining Performance"). Include a primary "Start Now" CTA button.
+    * **Features Grid:** A 3-column grid showing key benefits (Documentation, Fast Approval, Reports) using Shadcn Cards.
+    * **Footer:** Simple copyright with Ministry-style styling.
+3.  **Styling details:**
+    * Background: Use a subtle "Dot Pattern" or "Grid Pattern" in SVG on a light background to add texture.
+    * Typography: Use the configured Arabic fonts (Cairo/Tajawal).
+    * Direction: Ensure full RTL support.
+    * Colors: Use the Primary (Blue/Green) variables defined in `tailwind.config.ts`.
+
+### Implementation Code
+Replace the entire content of `client/src/pages/landing.tsx` with this code structure:
+
+```tsx
+import { Link } from "wouter";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { motion } from "framer-motion";
+import { CheckCircle, FileText, BarChart3, ShieldCheck, ArrowLeft } from "lucide-react";
+
+export default function Landing() {
+  const fadeIn = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 }
+  };
+
+  return (
+    <div className="min-h-screen bg-background font-sans" dir="rtl">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 -z-10 h-full w-full bg-white bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)]"></div>
+
+      {/* Navbar */}
+      <nav className="container mx-auto px-6 py-6 flex justify-between items-center">
+        <div className="flex items-center gap-2">
+          <div className="h-10 w-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
+            <ShieldCheck className="h-6 w-6" />
+          </div>
+          <h1 className="text-xl font-bold text-gray-900 hidden md:block">ميثاق الأداء الوظيفي</h1>
+        </div>
+        <a href="/api/auth/login">
+          <Button variant="outline" className="font-bold border-primary text-primary hover:bg-primary hover:text-white transition-all">
+            تسجيل الدخول
+          </Button>
+        </a>
+      </nav>
+
+      {/* Hero Section */}
+      <main className="container mx-auto px-6 pt-16 pb-24 text-center">
+        <motion.div 
+          initial="hidden" 
+          animate="visible" 
+          transition={{ duration: 0.5 }}
+          variants={fadeIn}
+          className="max-w-3xl mx-auto space-y-6"
+        >
+          <div className="inline-block px-4 py-1.5 rounded-full bg-blue-50 text-blue-700 text-sm font-semibold mb-4 border border-blue-100">
+            ✨ متوافق مع معايير وزارة التعليم الجديدة
+          </div>
+          <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 tracking-tight leading-tight">
+            نظام <span className="text-transparent bg-clip-text bg-gradient-to-l from-blue-600 to-green-600">توثيق الأداء</span> الذكي
+          </h1>
+          <p className="text-xl text-gray-600 leading-relaxed max-w-2xl mx-auto">
+            منصة متكاملة تمكن المعلمين من توثيق منجزاتهم المهنية، وتتيح للمديرين متابعة الأداء واعتماد الشواهد بدقة وسهولة.
+          </p>
+          
+          <div className="flex justify-center gap-4 pt-4">
+            <a href="/api/auth/login">
+              <Button size="lg" className="h-12 px-8 text-lg shadow-lg hover:shadow-xl transition-all bg-gradient-to-l from-blue-600 to-green-600 hover:opacity-90 border-0">
+                ابدأ الآن <ArrowLeft className="mr-2 h-5 w-5" />
+              </Button>
+            </a>
+          </div>
+        </motion.div>
+
+        {/* Features Grid */}
+        <motion.div 
+          initial="hidden" 
+          whileInView="visible"
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          variants={fadeIn}
+          className="grid md:grid-cols-3 gap-8 mt-24"
+        >
+          <FeatureCard 
+            icon={<FileText className="h-8 w-8 text-blue-500" />}
+            title="توثيق الشواهد"
+            description="رفع وتنظيم الشواهد المنهجية وغير المنهجية وربطها بالمعايير الوزارية بضغطة زر."
+          />
+          <FeatureCard 
+            icon={<CheckCircle className="h-8 w-8 text-green-500" />}
+            title="الاعتماد الفوري"
+            description="نظام إشعارات لحظي يتيح للمدير مراجعة واعتماد الملفات مع التغذية الراجعة."
+          />
+          <FeatureCard 
+            icon={<BarChart3 className="h-8 w-8 text-purple-500" />}
+            title="تقارير الأداء"
+            description="لوحات معلومات تحليلية تظهر نسب الإنجاز وتدعم اتخاذ القرار التربوي."
+          />
+        </motion.div>
+      </main>
+
+      {/* Footer */}
+      <footer className="border-t py-8 text-center text-gray-500 text-sm bg-gray-50/50">
+        <p>جميع الحقوق محفوظة © {new Date().getFullYear()} - نظام إدارة الأداء الوظيفي</p>
+      </footer>
+    </div>
+  );
+}
+
+function FeatureCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
+  return (
+    <Card className="border-none shadow-md hover:shadow-xl transition-shadow duration-300 bg-white/50 backdrop-blur-sm">
+      <CardContent className="pt-6 text-center space-y-4">
+        <div className="h-16 w-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          {icon}
+        </div>
+        <h3 className="text-xl font-bold text-gray-900">{title}</h3>
+        <p className="text-gray-500 leading-relaxed">{description}</p>
+      </CardContent>
+    </Card>
+  );
+}
+
+
+---
+
+### 🎨 ماذا سيحدث بعد التنفيذ؟
+
+1.  **انطباع أولي قوي:** بدلاً من الصفحة الفارغة، سيستقبل المستخدم عنوان ضخم (Headline) بألوان متدرجة تقول "نظام توثيق الأداء الذكي".
+2.  **حيوية:** العناصر لن تظهر فجأة، بل ستنساب للأعلى (Float Up) عند تحميل الصفحة بفضل `framer-motion`.
+3.  **وضوح:** ثلاثة كروت في الأسفل تشرح للمعلم والمدير "لماذا يجب أن أستخدم هذا النظام؟".
+4.  **جمالية:** الخلفية لن تكون بيضاء مملة، بل ستحتوي على نمط نقاط (Dot Pattern) خفيف جداً يعطي طابعاً تقنياً حديثاً (مثل المواقع العالمية كـ Stripe أو Vercel).
+
+**هل أنت مستعد لرؤية الوجه الجديد لنظامك؟** نفذ الأمر وأخبرني برأيك! 🚀
+

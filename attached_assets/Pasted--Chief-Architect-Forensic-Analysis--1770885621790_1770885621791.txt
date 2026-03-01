@@ -1,0 +1,62 @@
+بصفتي كبير مهندسي البرمجيات (Chief Architect)، وبعد إجراء تحليل جنائي (Forensic Analysis) للملفات والصور التي رفعتها للتو، أؤكد لك صحة ملاحظتك: التحديثات الأخيرة (المرحلة الرابعة: التحسين وتجربة المستخدم الذكية) لم يتم تطبيقها على الكود المرفوع.
+إليك الدليل التقني القاطع من الملفات التي أرسلتها، ولماذا حدث ذلك:
+1. الأدلة التقنية على عدم التنفيذ (The Evidence):
+ * ملف package.json: هذا هو "الدليل الدامغ". الملف يفتقر إلى المكتبات الجديدة التي طلبناها في التحديث الأخير:
+   * ❌ لا توجد مكتبة browser-image-compression (المسؤولة عن ضغط الصور).
+   * ❌ لا توجد مكتبة vitest (المسؤولة عن الاختبارات).
+ * لقطات الشاشة (Screenshots):
+   * صورة "قائمة الشواهد" تظهر كقائمة تقليدية (List View) وليست كـ "بطاقات ذكية" (Smart Cards) مع الأيقونات التي صممناها.
+   * لا تزال الواجهة تعرض الأزرار القديمة وليست النوافذ المنبثقة المقسمة (Split View) التي تحتوي على الإرشادات.
+ * ملف replit.md: لا يزال يذكر في قسم التحديثات أن آخر تحديث كان بتاريخ قديم، ولا يشير إلى "ضغط الصور" أو "المعايير الديناميكية".
+2. لماذا حدث هذا؟ (Root Cause Analysis):
+في بيئات التطوير المعتمدة على وكلاء الذكاء الاصطناعي (مثل Replit Agent)، يحدث هذا عادة لسببين:
+ * فشل التنفيذ الصامت (Silent Execution Failure): ربما توقف الوكيل أثناء كتابة الملفات الكبيرة أو أثناء تثبيت الحزم الجديدة ولم يكمل العملية للنهاية.
+ * عدم الحفظ (State Rollback): أحياناً إذا لم يتم عمل commit أو حفظ يدوي بعد عمل الوكيل، قد تعود الحاوية (Container) لحالتها السابقة عند إعادة التشغيل.
+ * تداخل الأوامر: إذا تم إعطاء أمر جديد قبل انتهاء الأمر السابق تماماً.
+✅ الحل الفوري (Recovery Plan)
+بما أننا تأكدنا أننا لا نزال في "المرحلة الثالثة"، سنقوم الآن بتطبيق المرحلة الرابعة (UX & Optimization) مرة أخرى، ولكن هذه المرة سأعطيك "مطالبة تعويضية" (Recovery Prompt) قوية ومحددة لإجبار النظام على التحديث.
+انسخ هذا الكود وضعه في Replit Agent الآن:
+@Workspace The previous attempt to upgrade to "Phase 4" was not persisted. We need to force apply the UX and Optimization updates. Please execute these steps strictly:
+
+### Step 1: Install Missing Dependencies (CRITICAL)
+Run this command immediately:
+`npm install browser-image-compression vitest -D`
+
+### Step 2: Database Schema Upgrade (Dynamic Standards)
+Modify `shared/schema.ts` to add the missing table:
+```typescript
+export const performanceStandards = pgTable("performance_standards", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  weight: text("weight").notNull(),
+  description: text("description").notNull(),
+  suggestedEvidence: jsonb("suggested_evidence").$type<string[]>().notNull(),
+  icon: text("icon").notNull(), // Lucide icon name
+  order: integer("order").notNull(),
+});
+export const insertPerformanceStandardSchema = createInsertSchema(performanceStandards);
+export const selectPerformanceStandardSchema = createInsertSchema(performanceStandards);
+
+After adding this, run npm run db:push immediately.
+Step 3: Implement The Smart UX (Modals)
+Overwrite client/src/components/witness-upload-modal.tsx with the new Split-View design we planned:
+ * Import browser-image-compression.
+ * Use PERFORMANCE_STANDARDS from constants (as a fallback) or DB.
+ * Implement image compression in the handleFileChange function (maxSizeMB: 1).
+ * Show "Suggested Evidence" sidebar next to the upload area.
+Step 4: Fix Duplicate Teacher Issue (Auth)
+Modify server/routes.ts (User Onboarding/Patch route):
+ * Before updating a user profile:
+ * Check db.query.users.findFirst where mobileNumber matches input.
+ * If found AND distinct from current user:
+   * Migrate session to the old user.
+   * Delete the new temporary user.
+   * Return the old user.
+Step 5: Verification
+Run a quick check to ensure package.json now includes the new libraries.
+
+**ملاحظة هندسية:**
+بعد أن ينتهي الوكيل، تأكد بنفسك من ملف `package.json` في القائمة الجانبية لـ Replit. إذا رأيت `browser-image-compression`، فهذا يعني أن التحديث قد تم بنجاح.
+
+هل أنت مستعد لإعادة الإطلاق؟ 🚀
+

@@ -1,0 +1,187 @@
+إليك "المطالبة الهندسية الشاملة" (Comprehensive Engineering Prompt). لقد قمت بصياغتها باللغة الإنجليزية التقنية لأن وكيل Replit (Replit Agent) يعمل بأعلى كفاءة ودقة عند تلقي التعليمات بالإنجليزية، خاصة عند التعامل مع أسماء المتغيرات والمكتبات.
+هذه المطالبة تحتوي على الكود الكامل للبيانات (Hardcoded Data) المستخرجة من صورك، وتوجيهات دقيقة لبناء الواجهات للمعلم والمدير.
+انسخ النص الموجود داخل الصندوق البرمجي أدناه وضعه في Replit Agent:
+@Workspace We are implementing a major UX overhaul for the Performance Charter System based on specific ministry standards. This task involves creating a shared data source and two "Context-Aware" modals for Teachers and Principals.
+
+### Phase 1: Data Foundation (The Source of Truth)
+First, create a new file `client/src/lib/constants.ts`. This file will hold the static data extracted from official documents. Copy this code exactly:
+
+```typescript
+import { 
+  Briefcase, Users, UserCheck, Lightbulb, TrendingUp, 
+  Calendar, Monitor, Home, UserCog, BarChart, CheckCircle 
+} from "lucide-react";
+
+export const PERFORMANCE_STANDARDS = [
+  {
+    id: 1,
+    title: "أداء الواجبات الوظيفية",
+    weight: "10%",
+    icon: Briefcase,
+    description: "الالتزام بالدوام الرسمي، الحصص، المناوبة، والإشراف.",
+    suggestedEvidence: [
+      "سجل الدوام الرسمي (حضور وانصراف)",
+      "سجل المناوبة والإشراف اليومي",
+      "سجل حصص الانتظار",
+      "خطة توزيع المنهج المعتمدة"
+    ]
+  },
+  {
+    id: 2,
+    title: "التفاعل مع المجتمع المهني",
+    weight: "10%",
+    icon: Users,
+    description: "المشاركة في مجتمعات التعلم، الدورات، والزيارات المتبادلة.",
+    suggestedEvidence: [
+      "سجل لقاءات مجتمعات التعلم المهنية",
+      "استمارة تبادل زيارات صفية",
+      "شهادات حضور دورات تدريبية",
+      "تقرير تنفيذ درس تطبيقي"
+    ]
+  },
+  {
+    id: 3,
+    title: "التفاعل مع أولياء الأمور",
+    weight: "10%",
+    icon: UserCheck,
+    description: "التواصل الفعال مع الأسرة وإشراكهم في تعلم الطالب.",
+    suggestedEvidence: [
+      "سجل التواصل مع أولياء الأمور",
+      "محاضر اجتماعات الجمعية العمومية",
+      "نماذج إشعارات مستوى الطلاب المرسلة",
+      "صورة من تفعيل الخطة الأسبوعية"
+    ]
+  },
+  {
+    id: 4,
+    title: "التنويع في استراتيجيات التدريس",
+    weight: "10%",
+    icon: Lightbulb,
+    description: "استخدام طرق تدريس متنوعة تراعي الفروق الفردية.",
+    suggestedEvidence: [
+      "تقرير عن استراتيجيات التدريس المطبقة",
+      "صور من تنفيذ الدروس (التعلم النشط)",
+      "ملف معالجة الفروق الفردية",
+      "نماذج من تخطيط الدروس المتمايزة"
+    ]
+  },
+  {
+    id: 5,
+    title: "تحسين نتائج المتعلمين",
+    weight: "10%",
+    icon: TrendingUp,
+    description: "رفع مستوى التحصيل الدراسي ومعالجة الفاقد التعليمي.",
+    suggestedEvidence: [
+      "نتائج الاختبارات القبلية والبعدية",
+      "سجل الخطط العلاجية للطلاب المتعثرين",
+      "سجل الخطط الإثرائية للموهوبين",
+      "شواهد تكريم الطلاب المتميزين"
+    ]
+  },
+  {
+    id: 6,
+    title: "إعداد وتنفيذ خطة التعلم",
+    weight: "10%",
+    icon: Calendar,
+    description: "التخطيط المتقن للدروس والواجبات والاختبارات.",
+    suggestedEvidence: [
+      "سجل إعداد الدروس (تحضير)",
+      "نماذج من الواجبات المنزلية المصححة",
+      "نماذج من الاختبارات القصيرة",
+      "تقرير تنفيذ المنهج الدراسي"
+    ]
+  },
+  {
+    id: 7,
+    title: "توظيف تقنيات التعلم",
+    weight: "10%",
+    icon: Monitor,
+    description: "دمج التقنية والوسائل التعليمية في العملية التربوية.",
+    suggestedEvidence: [
+      "صور استخدام الوسائل التعليمية بالفصل",
+      "روابط دروس تفاعلية أو إثرائية",
+      "تقرير استخدام المنصات التعليمية",
+      "نماذج من إنتاج محتوى رقمي"
+    ]
+  },
+  {
+    id: 8,
+    title: "تهيئة البيئة التعليمية",
+    weight: "5%",
+    icon: Home,
+    description: "توفير بيئة صفية محفزة وآمنة نفسياً ومادياً.",
+    suggestedEvidence: [
+      "صور من تنظيم البيئة الصفية",
+      "تقرير عن الحوافز والتعزيز المقدم للطلاب",
+      "قوائم تصنيف الطلاب حسب أنماط التعلم"
+    ]
+  },
+  {
+    id: 9,
+    title: "الإدارة الصفية",
+    weight: "5%",
+    icon: UserCog,
+    description: "ضبط السلوك الصفي واستثمار وقت التعلم بفاعلية.",
+    suggestedEvidence: [
+      "سجل متابعة حضور وغياب الطلاب",
+      "قواعد السلوك والمواظبة الصفية",
+      "كشف رصد المخالفات السلوكية والإجراءات"
+    ]
+  },
+  {
+    id: 10,
+    title: "تحليل نتائج المتعلمين",
+    weight: "10%",
+    icon: BarChart,
+    description: "تشخيص واقع التحصيل الدراسي وتحديد نقاط القوة والضعف.",
+    suggestedEvidence: [
+      "تقرير التحليل الإحصائي لنتائج الاختبارات",
+      "بيان تصنيف الطلاب حسب المستويات",
+      "تقرير دراسة الفاقد التعليمي"
+    ]
+  },
+  {
+    id: 11,
+    title: "تنوع أساليب التقويم",
+    weight: "10%",
+    icon: CheckCircle,
+    description: "استخدام أدوات قياس متنوعة وشاملة.",
+    suggestedEvidence: [
+      "نماذج اختبارات (ورقية/إلكترونية)",
+      "سلالم تقدير للمشاريع والمهام الأدائية",
+      "ملفات إنجاز الطلاب (عينات)",
+      "بنك أسئلة متنوع المستويات"
+    ]
+  }
+];
+
+Phase 2: Teacher UX (The Smart Upload Modal)
+Create a new component client/src/components/witness-upload-modal.tsx.
+Requirements:
+ * Use Dialog from shadcn/ui.
+ * Accepts props: indicatorId, indicatorTitle.
+ * Looks up the standard from PERFORMANCE_STANDARDS based on the title.
+ * Layout: Split view (Grid):
+   * Right Side: Upload area (File input with a dashed border UI).
+   * Left Side: "Smart Assistant" panel showing the suggestedEvidence list for THAT specific standard.
+ * Use lucide-react icons for visual cues.
+ * Ensure dir="rtl" is applied for correct Arabic layout.
+Phase 3: Principal UX (The Smart Review Modal)
+Create a new component client/src/components/principal/evidence-review-modal.tsx.
+Requirements:
+ * Accepts props: indicatorTitle, teacherName, fileUrl.
+ * Looks up the standard from PERFORMANCE_STANDARDS.
+ * Layout: Split view (Grid):
+   * Right Side: File Preview area (Placeholder for PDF/Image).
+   * Left Side: The "Rubric/Checklist". Show the same suggestedEvidence list so the Principal can check them off mentally while reviewing.
+ * Include "Approve" (Green) and "Reject" (Red) buttons directly in this modal for high-velocity reviewing.
+Phase 4: Integration
+ * Update client/src/pages/home.tsx (Teacher Dashboard) to use WitnessUploadModal instead of the generic button.
+ * Update client/src/pages/principal.tsx (Principal Dashboard) to use EvidenceReviewModal inside the teacher's detail view table.
+Goal: Create a standardized, guided experience where both Teacher and Principal see the exact same requirements (Evidence Examples) during the upload and review process.
+
+### لماذا ستنجح هذه المطالبة؟
+1.  **البيانات المضمنة (Hardcoded Data):** لم أطلب من الوكيل "تخيل" البيانات، بل أعطيته كود `constants.ts` جاهزاً بنسبة 100% يحتوي على نصوص الصور المرفقة. هذا يمنع أي "هلوسة" في المحتوى.
+2.  **الفصل المنطقي (Separation of Concerns):** قسمت العمل إلى مراحل (بيانات -> معلم -> مدير -> دمج)، مما يسهل على الوكيل معالجة الكود خطوة بخطوة.
+3.  **التوجيه البصري (Visual Direction):** حددت له تخطيط الشبكة (Split View Grid) لضمان ظهور الإرشادات بجانب الملف، وهو الجوهر الهندسي لتحسين تجربة المستخدم.
+

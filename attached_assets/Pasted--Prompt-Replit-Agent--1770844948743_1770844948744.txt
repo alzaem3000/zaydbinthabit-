@@ -1,0 +1,120 @@
+إليك "الأمر" (Prompt) المصاغ بدقة هندسية ليتم نسخه ولصقه مباشرة في Replit Agent. هذا الأمر مصمم ليكون واضحاً، حتمياً، ومجزأً لضمان تنفيذ الوكيل للمهام دون أخطاء.
+قم بنسخ النص التالي الموجود داخل المربع ولصقه في شات Replit Agent:
+@Workspace I need to implement "Phase 0" of the system architecture upgrade by adding Notification System, Audit Logs, and Academic Cycles. Please execute the following 3 steps strictly:
+
+### Step 1: Update Database Schema
+Modify `shared/schema.ts` to add these new tables and relations. Keep existing code and append these:
+
+```typescript
+// -----------------------------------------------------------------------------
+// 1. Time Cycles Management
+// -----------------------------------------------------------------------------
+export const academicCycles = pgTable("academic_cycles", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date").notNull(),
+  isActive: boolean("is_active").default(false).notNull(),
+  isLocked: boolean("is_locked").default(false).notNull(),
+});
+
+// -----------------------------------------------------------------------------
+// 2. Audit Logs
+// -----------------------------------------------------------------------------
+export const auditLogs = pgTable("audit_logs", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  action: text("action").notNull(),
+  entityType: text("entity_type").notNull(),
+  entityId: integer("entity_id"),
+  details: jsonb("details"),
+  ipAddress: text("ip_address"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// -----------------------------------------------------------------------------
+// 3. Notifications System
+// -----------------------------------------------------------------------------
+export const notifications = pgTable("notifications", {
+  id: serial("id").primaryKey(),
+  recipientId: integer("recipient_id").notNull(),
+  type: text("type").notNull(), // 'info', 'success', 'warning', 'error'
+  title: text("title").notNull(),
+  message: text("message").notNull(),
+  link: text("link"),
+  isRead: boolean("is_read").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Relations
+export const auditLogsRelations = relations(auditLogs, ({ one }) => ({
+  user: one(users, { fields: [auditLogs.userId], references: [users.id] }),
+}));
+
+export const notificationsRelations = relations(notifications, ({ one }) => ({
+  recipient: one(users, { fields: [notifications.recipientId], references: [users.id] }),
+}));
+
+// Zod Schemas
+export const insertAcademicCycleSchema = createInsertSchema(academicCycles);
+export const selectAcademicCycleSchema = createInsertSchema(academicCycles);
+export const insertNotificationSchema = createInsertSchema(notifications);
+export const selectNotificationSchema = createInsertSchema(notifications);
+
+Step 2: Create Service Layer
+Create a new folder server/services and add two files:
+ * server/services/notification.ts:
+<!-- end list -->
+import { db } from "../db";
+import { notifications } from "@shared/schema";
+import { eq, desc } from "drizzle-orm";
+
+export class NotificationService {
+  static async send(data: { recipientId: number; type: "info" | "success" | "warning" | "error"; title: string; message: string; link?: string; }) {
+    try {
+      await db.insert(notifications).values(data);
+    } catch (error) {
+      console.error("Failed to send notification:", error);
+    }
+  }
+
+  static async getUserNotifications(userId: number, limit = 20) {
+    return await db.query.notifications.findMany({
+      where: eq(notifications.recipientId, userId),
+      orderBy: [desc(notifications.createdAt)],
+      limit: limit,
+    });
+  }
+
+  static async markAsRead(notificationId: number) {
+    await db.update(notifications).set({ isRead: true }).where(eq(notifications.id, notificationId));
+  }
+}
+
+ * server/services/audit.ts:
+<!-- end list -->
+import { db } from "../db";
+import { auditLogs } from "@shared/schema";
+
+export class AuditService {
+  static async log(data: { userId: number; action: string; entityType: string; entityId?: number; details?: any; ipAddress?: string; }) {
+    try {
+      await db.insert(auditLogs).values({
+        ...data,
+        details: data.details ? JSON.stringify(data.details) : null,
+      });
+    } catch (error) {
+      console.error("Audit Log Failure:", error);
+    }
+  }
+}
+
+Step 3: Database Sync
+After creating the files, run npm run db:push to apply schema changes.
+
+### لماذا هذا الأمر "دقيق"؟
+1.  **السياق المحدد (@Workspace):** يوجه الوكيل للعمل ضمن سياق المشروع الحالي.
+2.  **الخطوات المرقمة (Step-by-step):** يمنع الوكيل من نسيان جزء من المهمة (مثل إنشاء مجلد الخدمات).
+3.  **الكود الحرفي (Literal Code):** لا نطلب من الوكيل "كتابة كود"، بل نعطيه الكود الجاهز والموثوق (الذي كتبناه سابقاً) لضمان عدم حدوث هلوسة أو تغيير في المنطق.
+4.  **أمر التنفيذ (Action Command):** في النهاية نطلب منه صراحة تشغيل `npm run db:push` لضمان أن التغييرات تنعكس في قاعدة البيانات.
+

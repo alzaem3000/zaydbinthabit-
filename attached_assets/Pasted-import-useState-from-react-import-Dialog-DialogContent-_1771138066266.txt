@@ -1,0 +1,178 @@
+import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Upload, Link as LinkIcon, CheckCircle, Lightbulb, ChevronLeft } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import imageCompression from "browser-image-compression";
+import { PERFORMANCE_STANDARDS } from "@/lib/constants"; // Or fetch from DB
+
+export function WitnessUploadModal({ indicatorId, indicatorTitle }: { indicatorId: number, indicatorTitle: string }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [uploadType, setUploadType] = useState<"file" | "link">("file");
+  const [file, setFile] = useState<File | null>(null);
+  const [link, setLink] = useState("");
+  const [witnessName, setWitnessName] = useState("");
+  const [isCompressing, setIsCompressing] = useState(false);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Logic to find suggestions based on title matching
+  const standard = PERFORMANCE_STANDARDS.find(s => indicatorTitle.includes(s.title)) || PERFORMANCE_STANDARDS[0];
+  const suggestions = standard.suggestedEvidence || [];
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const originalFile = e.target.files[0];
+      if (originalFile.type.startsWith("image/")) {
+        setIsCompressing(true);
+        try {
+          // Compression settings: Max 1MB, Max Width 1920px
+          const compressed = await imageCompression(originalFile, { maxSizeMB: 1, maxWidthOrHeight: 1920 });
+          setFile(compressed);
+        } catch (err) {
+          console.error("Compression failed, using original", err);
+          setFile(originalFile);
+        } finally {
+          setIsCompressing(false);
+        }
+      } else {
+        setFile(originalFile);
+      }
+    }
+  };
+
+  const mutation = useMutation({
+    mutationFn: async () => {
+      const formData = new FormData();
+      formData.append("description", witnessName);
+      if (uploadType === "file" && file) formData.append("file", file);
+      if (uploadType === "link") formData.append("link", link);
+      
+      // Note: Make sure the route matches Step 2
+      await apiRequest("POST", `/api/indicators/${indicatorId}/witnesses`, formData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["indicators"] });
+      setIsOpen(false);
+      toast({ title: "تم الحفظ", description: "تم رفع الشاهد بنجاح", variant: "default" });
+      setFile(null); setLink(""); setWitnessName(""); // Reset form
+    },
+    onError: () => {
+      toast({ title: "خطأ", description: "فشل في رفع الشاهد", variant: "destructive" });
+    }
+  });
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button className="w-full gap-2 bg-primary hover:bg-primary/90 text-white shadow-sm">
+          <Upload className="h-4 w-4" /> إضافة شاهد
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md p-0 overflow-hidden font-sans" dir="rtl">
+        <DialogHeader className="px-5 pt-5 pb-3 bg-slate-50/80 border-b backdrop-blur-sm">
+          <DialogTitle className="text-right text-slate-800 flex items-center gap-2">
+            <Upload className="h-5 w-5 text-primary" />
+            توثيق الأداء
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="p-5 space-y-5">
+          {/* 1. Context: Indicator Name */}
+          <div className="space-y-2">
+            <Label className="text-xs text-muted-foreground font-bold">عنصر التقييم الحالي</Label>
+            <div className="p-3 bg-blue-50/50 border border-blue-100 rounded-lg text-blue-900 font-medium text-sm flex items-center justify-between">
+              {indicatorTitle}
+              <CheckCircle className="h-4 w-4 text-blue-500" />
+            </div>
+          </div>
+
+          {/* 2. Suggestions (Clickable Cards) */}
+          <div className="space-y-2">
+             <div className="flex items-center gap-2">
+                <Lightbulb className="h-4 w-4 text-amber-500" />
+                <Label className="text-xs font-bold text-slate-700">مقترحات الشواهد (اضغط للاختيار)</Label>
+             </div>
+             <ScrollArea className="h-28 rounded-md border bg-slate-50 p-2">
+                <div className="space-y-2">
+                  {suggestions.map((sug: string, idx: number) => (
+                    <div 
+                      key={idx} 
+                      onClick={() => setWitnessName(sug)}
+                      className="flex items-center justify-between p-2.5 bg-white rounded-md border border-slate-200 shadow-sm cursor-pointer hover:border-primary hover:shadow-md transition-all group"
+                    >
+                      <span className="text-xs text-slate-600 group-hover:text-primary font-medium">{sug}</span>
+                      <ChevronLeft className="h-3 w-3 text-slate-300 group-hover:text-primary" />
+                    </div>
+                  ))}
+                </div>
+             </ScrollArea>
+          </div>
+
+          {/* 3. Input Form */}
+          <div className="space-y-3">
+             <Label>اسم الشاهد</Label>
+             <Input 
+               value={witnessName} 
+               onChange={(e) => setWitnessName(e.target.value)} 
+               placeholder="مثال: سجل الحضور والغياب..." 
+               className="bg-white"
+             />
+
+             <Tabs value={uploadType} onValueChange={(v: any) => setUploadType(v)} className="w-full">
+               <TabsList className="grid w-full grid-cols-2">
+                 <TabsTrigger value="file">رفع ملف (PDF/Img)</TabsTrigger>
+                 <TabsTrigger value="link">رابط (Drive/Form)</TabsTrigger>
+               </TabsList>
+               
+               <TabsContent value="file" className="mt-3">
+                 <div className="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center hover:bg-slate-50 hover:border-primary/50 transition-all relative group cursor-pointer">
+                   <input 
+                     type="file" 
+                     onChange={handleFileChange}
+                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
+                   />
+                   <div className="flex flex-col items-center gap-2">
+                     <div className="p-3 bg-slate-100 rounded-full group-hover:bg-blue-100 transition-colors">
+                       <Upload className="h-5 w-5 text-slate-500 group-hover:text-blue-600" />
+                     </div>
+                     <span className="text-sm text-slate-600 font-medium">
+                       {file ? file.name : "اضغط هنا لاختيار الملف"}
+                     </span>
+                     {isCompressing && <span className="text-xs text-amber-600 animate-pulse">جاري ضغط الصورة...</span>}
+                   </div>
+                 </div>
+               </TabsContent>
+               
+               <TabsContent value="link" className="mt-3">
+                  <div className="relative">
+                    <LinkIcon className="absolute right-3 top-2.5 h-4 w-4 text-slate-400" />
+                    <Input 
+                      value={link}
+                      onChange={(e) => setLink(e.target.value)}
+                      className="pr-9"
+                      placeholder="[https://docs.google.com/](https://docs.google.com/)..." 
+                    />
+                  </div>
+               </TabsContent>
+             </Tabs>
+          </div>
+
+          <Button 
+            onClick={() => mutation.mutate()} 
+            disabled={mutation.isPending || (!file && !link)} 
+            className="w-full bg-primary hover:bg-primary/90 font-bold"
+          >
+            {mutation.isPending ? "جاري الرفع..." : "حفظ الشاهد"}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}

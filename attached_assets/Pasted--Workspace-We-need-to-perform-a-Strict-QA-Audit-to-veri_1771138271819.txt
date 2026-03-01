@@ -1,0 +1,73 @@
+@Workspace We need to perform a "Strict QA Audit" to verify that the "Witness Evidence" features (File/Link support, Image Compression, and UI matching) were correctly implemented.
+
+Do NOT just say "it is done". Instead, create and run a verification script to prove it.
+
+### Step 1: Create Audit Script
+Create a file `scripts/qa-audit.ts` with the following code:
+
+```typescript
+import fs from 'fs';
+import path from 'path';
+
+console.log("🔍 STARTING SYSTEM AUDIT...");
+
+let errors: string[] = [];
+
+// 1. Check Dependencies
+const packageJson = fs.readFileSync('package.json', 'utf8');
+if (!packageJson.includes('browser-image-compression')) {
+  errors.push("❌ MISSING DEPENDENCY: 'browser-image-compression' is not in package.json");
+} else {
+  console.log("✅ Dependency 'browser-image-compression' found.");
+}
+
+// 2. Check Database Schema
+const schemaPath = path.join('shared', 'schema.ts');
+const schemaContent = fs.readFileSync(schemaPath, 'utf8');
+if (!schemaContent.includes('link: text("link")')) {
+  errors.push("❌ SCHEMA ERROR: 'link' column missing in 'witnesses' table.");
+} else {
+  console.log("✅ Schema 'witnesses' table has 'link' column.");
+}
+
+// 3. Check Backend Logic
+const routesPath = path.join('server', 'routes.ts');
+const routesContent = fs.readFileSync(routesPath, 'utf8');
+if (!routesContent.includes('const { description, link } = req.body')) {
+  errors.push("❌ BACKEND ERROR: Route does not extract 'link' from body.");
+} else if (!routesContent.includes('link: link')) {
+  errors.push("❌ BACKEND ERROR: Route does not save 'link' to database.");
+} else {
+  console.log("✅ Backend route handles 'link' and 'file' correctly.");
+}
+
+// 4. Check Teacher UI (Modal)
+const modalPath = path.join('client', 'src', 'components', 'witness-upload-modal.tsx');
+if (!fs.existsSync(modalPath)) {
+  errors.push("❌ FRONTEND ERROR: 'witness-upload-modal.tsx' file missing.");
+} else {
+  const modalContent = fs.readFileSync(modalPath, 'utf8');
+  
+  if (!modalContent.includes('browser-image-compression')) {
+    errors.push("❌ UI ERROR: Image compression library not imported.");
+  }
+  if (!modalContent.includes('<TabsTrigger value="link">')) {
+    errors.push("❌ UI ERROR: 'Link' tab is missing in the interface.");
+  }
+  if (!modalContent.includes('setWitnessName(sug)')) {
+    errors.push("❌ UI ERROR: Suggestions 'Click-to-fill' logic missing.");
+  }
+  
+  if (errors.length === 0) console.log("✅ Teacher UI implements compression, tabs, and suggestions.");
+}
+
+// Final Report
+console.log("\n--- AUDIT RESULTS ---");
+if (errors.length > 0) {
+  console.error("FAILED. The following errors were found:");
+  errors.forEach(e => console.error(e));
+  process.exit(1);
+} else {
+  console.log("🎉 SUCCESS: All systems are nominal. Feature implementation verified.");
+  process.exit(0);
+}

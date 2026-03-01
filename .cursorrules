@@ -1,0 +1,17 @@
+# 🤝 Agent Handover Protocol - ZaydBinThabit 2
+
+لضمان عمل الوكلاء الثلاثة بانسجام (Architect 🏗️ -> Developer 💻 -> QA-Specialist 🕵️)، يجب اتباع هذا البروتوكول بصرامة:
+
+1. **إسناد المهام (Task Delegation):**
+   * ممنوع قيام (Developer) بتعديل المخططات (Database Schemas) دون تكليف من (Architect).
+   * ممنوع القيام بأي عملية إيداع للخادم (Push/Commit) قبل اعتماد (QA-Specialist).
+
+2. **تسجيل الحالة (State Documentation):**
+   * عند الانتهاء من جزء من العمل، يجب تلخيص ما تم بناءه أو تعديله من ملفات واضحة بمسارها الكامل قبل التسليم.
+
+3. **صيغة التسليم الإلزامية (Handoff Message):**
+   * عند تسليم العمل لوكيل آخر، ابدأ رسالتك بهذه الصيغة:
+     `[Handover to: <AgentName>]` 
+   * **أمثلة:**
+     - `[Handover to: Developer Agent]`: "تم إنشاء هيكل الجدول Users.. يرجى بناء واجهة إضافة مستخدم."
+     - `[Handover to: QA-Specialist]`: "تم بناء الواجهة بناءً على أوامر Architect، يرجى فحص جودة الكود قبل التسليم النهائي."

@@ -1,0 +1,53 @@
+@Workspace We are executing "Phase 4: Optimization & Robustness". Please perform these 4 tasks strictly.
+
+### Task 1: Database Schema Upgrade
+Modify `shared/schema.ts`:
+1.  **Performance Standards Table:** Add this table to replace hardcoded constants:
+    ```typescript
+    export const performanceStandards = pgTable("performance_standards", {
+      id: serial("id").primaryKey(),
+      title: text("title").notNull(),
+      weight: text("weight").notNull(),
+      description: text("description").notNull(),
+      suggestedEvidence: jsonb("suggested_evidence").$type<string[]>().notNull(),
+      icon: text("icon").notNull(),
+      order: integer("order").notNull(),
+    });
+    ```
+2.  **User Mobile Field:** Update `users` table to add `mobileNumber`:
+    ```typescript
+    mobileNumber: text("mobile_number").unique(),
+    ```
+3.  **Run Migration:** Run `npm run db:push` immediately after updating schema.
+
+### Task 2: Advanced Auth & Onboarding Logic (CRITICAL)
+Modify the onboarding route in `server/routes.ts` (`PATCH /api/user` or similar) to handle duplicate prevention intelligently:
+- **Input:** Receive `mobileNumber`, `fullNameArabic`, etc.
+- **Logic:**
+  1. Check if a user with this `mobileNumber` ALREADY exists (let's call it `oldUser`).
+  2. If `oldUser` exists AND it is different from `currentUser`:
+     - Update `oldUser` with the new profile data (name, school, etc.).
+     - **Session Migration:** Manually update `req.session.passport.user` to `oldUser.id`.
+     - **Cleanup:** Delete the `currentUser` (the temporary one created by Replit Auth) to prevent ghost records.
+     - Save session: `await new Promise((resolve) => req.session.save(resolve));`
+     - Return the `oldUser` data.
+  3. If no `oldUser` exists:
+     - Update `currentUser` with the `mobileNumber` and profile data normally.
+
+### Task 3: Image Compression Implementation
+1.  Install `browser-image-compression`.
+2.  Modify `client/src/components/witness-upload-modal.tsx`:
+    - In the file input `onChange` handler:
+    - If the file is an image, use `imageCompression(file, { maxSizeMB: 0.8, maxWidthOrHeight: 1920 })`.
+    - Show a loading state ("جاري ضغط الصورة...") while compressing.
+    - Upload the compressed file instead of the original.
+
+### Task 4: Dynamic Standards Seeding & API
+1.  Create `scripts/seed-standards.ts` to read from `client/src/lib/constants.ts` and insert into the DB `performanceStandards` table. Execute it.
+2.  Create API `GET /api/standards` to fetch from DB.
+3.  Refactor `client/src/lib/constants.ts` to fetch from this API using React Query instead of static arrays.
+
+### Task 5: Unit Testing Setup
+1.  Install `vitest`.
+2.  Add `"test": "vitest"` to `package.json`.
+3.  Create `tests/logic.test.ts`. Write a simple test for `CycleService` logic (mocking the DB response) to ensure it defaults to creating a cycle if none exists.

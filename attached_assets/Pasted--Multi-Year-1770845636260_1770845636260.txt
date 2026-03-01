@@ -1,0 +1,100 @@
+مرحلة حاسمة جداً. الآن سنقوم بتحويل النظام من "تطبيق لسنة واحدة" إلى "نظام مؤسسي مستدام" (Multi-Year Enterprise System).
+المشكلة التقنية: البيانات الحالية في جدول indicators "يتيمة" زمنياً. إذا بدأ العام الجديد، ستختلط بيانات 1445 ببيانات 1446.
+الحل الهندسي: ربط كل مؤشر وكل توقيع بـ cycleId.
+بصفتي مهندس المعمارية، قمت بتصميم "خطة الهجرة الآمنة" (Safe Migration Plan) لضمان عدم فقدان البيانات الحالية أثناء التحديث.
+انسخ هذا الأمر الموجه (Prompt) بدقة لـ Replit Agent لتنفيذ المرحلة الثالثة (Phase 3): العزل الزمني وإدارة الدورات:
+@Workspace We are entering the final "Phase 3: Academic Cycles & Data Isolation". This requires a careful schema update to avoid data loss. Please execute these 3 steps sequentially:
+
+### Step 1: Schema Migration & Association
+Modify `shared/schema.ts` to link Indicators and Signatures to Academic Cycles.
+1. Add `academicCycleId` column to `indicators` and `signatures` tables.
+2. *Crucial:* Since we have existing data, we cannot make it `notNull` immediately without a default.
+3. Update the relations.
+
+Code to append/modify in `shared/schema.ts`:
+
+```typescript
+// Update indicators table definition (Add this column)
+// academicCycleId: integer("academic_cycle_id").references(() => academicCycles.id),
+
+// Update signatures table definition (Add this column)
+// academicCycleId: integer("academic_cycle_id").references(() => academicCycles.id),
+
+// Update Relations
+export const indicatorsRelations = relations(indicators, ({ one, many }) => ({
+  user: one(users, { fields: [indicators.userId], references: [users.id] }),
+  academicCycle: one(academicCycles, { fields: [indicators.academicCycleId], references: [academicCycles.id] }), // New
+  criteria: many(criteria),
+  witnesses: many(witnesses),
+}));
+
+export const signaturesRelations = relations(signatures, ({ one }) => ({
+  user: one(users, { fields: [signatures.userId], references: [users.id] }),
+  indicator: one(indicators, { fields: [signatures.indicatorId], references: [indicators.id] }),
+  academicCycle: one(academicCycles, { fields: [signatures.academicCycleId], references: [academicCycles.id] }), // New
+}));
+
+Step 2: Cycle Service & Middleware
+Create server/services/cycles.ts. This service will handle the "Active Cycle" logic.
+If no cycle exists, it must create a default one (e.g., "2024-2025") to prevent system crash.
+import { db } from "../db";
+import { academicCycles } from "@shared/schema";
+import { eq } from "drizzle-orm";
+
+export class CycleService {
+  static async getActiveCycle() {
+    const cycle = await db.query.academicCycles.findFirst({
+      where: eq(academicCycles.isActive, true)
+    });
+    
+    if (!cycle) {
+      // Auto-initialize first cycle if none exists
+      const [newCycle] = await db.insert(academicCycles).values({
+        name: "العام الدراسي الحالي",
+        startDate: new Date(),
+        endDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+        isActive: true
+      }).returning();
+      return newCycle;
+    }
+    return cycle;
+  }
+
+  static async getAllCycles() {
+    return await db.query.academicCycles.findMany();
+  }
+}
+
+Step 3: Enforce Cycle Scope in Routes
+Modify server/storage.ts or server/routes.ts (wherever createIndicator logic resides) to:
+ * Fetch the activeCycleId using CycleService.getActiveCycle().
+ * Inject this academicCycleId when creating a new Indicator or Signature.
+ * Update getUserIndicators to filter by the Active Cycle by default (so teachers don't see old data mixed with new).
+Example logic to apply:
+// Inside createIndicator:
+const activeCycle = await CycleService.getActiveCycle();
+const indicator = await db.insert(indicators).values({
+  ...data,
+  academicCycleId: activeCycle.id // Enforce current year
+}).returning();
+
+// Inside getUserIndicators:
+const activeCycle = await CycleService.getActiveCycle();
+// Add where clause: eq(indicators.academicCycleId, activeCycle.id)
+
+Step 4: Settings Page
+Create a simple page client/src/pages/cycles-settings.tsx (accessible only to creator or admin) that lists cycles and allows marking one as "Active". This acts as the "Time Machine" switch.
+Finally, run npm run db:push.
+
+### ما الذي سيحدث هندسياً؟
+1.  **التهيئة الذاتية (Self-Healing):** إذا لم يجد النظام عاماً دراسياً، سيقوم بإنشاء "العام الحالي" تلقائياً لضمان استمرار العمل.
+2.  **العزل (Isolation):** عندما يقوم المعلم بإضافة مؤشر جديد غداً، سيتم ختمه بختم "2025". عندما ننتقل لعام "2026"، ستختفي مؤشرات 2025 من القائمة الرئيسية (لكنها ستبقى في الأرشيف).
+3.  **المرونة (Flexibility):** يمكنك كمدير العودة للوراء (تفعيل عام سابق) لمراجعة الأرشيف بضغطة زر.
+
+<verified_resources>
+* **Database Normalization:** Ensuring academic years are handled as separate entities linked via Foreign Keys.
+* **SaaS Architecture:** Multi-tenancy concepts applied to "Time" periods.
+</verified_resources>
+
+أخبرني عند الانتهاء لنقوم بـ "إغلاق المشروع" (Project Sign-off) والتحقق النهائي.
+

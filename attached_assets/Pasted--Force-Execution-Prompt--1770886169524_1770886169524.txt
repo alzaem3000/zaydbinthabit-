@@ -1,0 +1,64 @@
+بصفتي كبير مهندسي البرمجيات، فهمت طلبك تماماً. أنت تريد "أمر تنفيذ جبري" (Force Execution Prompt) لا يترك مجالاً للخطأ أو الاجتهاد، ويغطي كافة الثغرات التي اكتشفناها (عدم تثبيت المكتبات، عدم تحديث الواجهة، مشكلة التكرار)، مع آلية فحص ذاتي صارمة.
+إليك المطالبة الشاملة والنهائية. انسخ هذا النص وضعه في Replit Agent وانتظر حتى ينتهي تماماً.
+🛡️ الأمر التنفيذي الشامل (The Ultimate Execution Prompt)
+@Workspace We are performing a "Force Update" to apply Phase 4 (Optimization, UX, and Robustness) which was missed in previous attempts. You must execute these 6 steps STRICTLY and SEQUENTIALLY. Do not skip any step.
+
+### Step 1: Force Install Dependencies
+Execute this command immediately to ensure missing libraries are present:
+`npm install browser-image-compression vitest -D`
+
+### Step 2: Database Schema Upgrade (Dynamic Standards)
+Modify `shared/schema.ts`. Append this table definition exactly:
+```typescript
+export const performanceStandards = pgTable("performance_standards", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  weight: text("weight").notNull(),
+  description: text("description").notNull(),
+  suggestedEvidence: jsonb("suggested_evidence").$type<string[]>().notNull(),
+  icon: text("icon").notNull(), // Lucide icon name
+  order: integer("order").notNull(),
+});
+export const insertPerformanceStandardSchema = createInsertSchema(performanceStandards);
+export const selectPerformanceStandardSchema = createInsertSchema(performanceStandards);
+
+ACTION: Run npm run db:push immediately after saving the file.
+Step 3: Implement Intelligent Auth (Duplicate Prevention)
+Modify the User Update/Onboarding route in server/routes.ts (likely PATCH /api/user). Implement this exact logic:
+ * Receive mobileNumber from request.
+ * Query DB: const existingUser = await db.query.users.findFirst({ where: eq(users.mobileNumber, mobileNumber) });
+ * CRITICAL LOGIC:
+   * IF existingUser exists AND existingUser.id !== req.user.id:
+     * Update req.session.passport.user = existingUser.id.
+     * Delete the temporary user (req.user.id) from DB.
+     * Save session and return existingUser.
+   * ELSE: Update the current user normally.
+Step 4: Overwrite Teacher UX (Smart Upload + Compression)
+Completely REPLACE client/src/components/witness-upload-modal.tsx with a version that includes:
+ * Split-View Layout: Right side for upload, Left side for "Suggested Evidence" list (fetched from PERFORMANCE_STANDARDS).
+ * Image Compression: Import imageCompression from browser-image-compression. In handleFileChange, apply compression (maxSizeMB: 1) before setting state. Show a "Compressing..." badge.
+Step 5: Overwrite Principal UX (Smart Review)
+Completely REPLACE client/src/components/principal/evidence-review-modal.tsx with a version that:
+ * Shows the file preview on one side.
+ * Shows the SAME "Suggested Evidence" checklist on the other side for reference.
+ * Includes direct "Approve/Reject" buttons.
+Step 6: Final System Audit (No Hallucinations)
+Create and run a script scripts/final-audit.ts that performs these checks:
+ * fs.existsSync for node_modules/browser-image-compression.
+ * Check if performance_standards table exists in DB.
+ * Check if witness-upload-modal.tsx contains the string "imageCompression".
+ * Log "✅ SYSTEM INTEGRITY CONFIRMED" only if all pass.
+EXECUTE NOW.
+
+---
+
+### 🧐 ماذا سيفعل هذا الأمر بالتفصيل؟ (للإحاطة الهندسية)
+
+1.  **الإجبار (Force Install):** يبدأ بتثبيت المكتبات المفقودة رغماً عن أي حالة سابقة.
+2.  **التوحيد (Schema Push):** يفرض تحديث قاعدة البيانات فوراً.
+3.  **الذكاء (Auth Logic):** يزرع كود "منع التكرار" الذي يدمج الحسابات تلقائياً بناءً على رقم الجوال.
+4.  **التجربة (UX Overwrite):** أمرتُه بـ **استبدال (Replace)** ملفات الواجهة بالكامل وليس "تعديلها"، لضمان ظهور التصميم المنقسم (Split View) وضغط الصور.
+5.  **الفحص (Audit):** لن يخبرك "تم" إلا بعد أن يشغل سكربت يتأكد برمجياً أن الملفات والمكتبات موجودة فعلاً.
+
+**توكل على الله ونفذ الأمر، وبعد ظهور رسالة `✅ SYSTEM INTEGRITY CONFIRMED`، سيكون النظام جاهزاً تماماً.** 🚀
+

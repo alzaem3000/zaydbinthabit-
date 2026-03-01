@@ -1,0 +1,55 @@
+إنجاز رائع! النظام الآن يمتلك "عصب" (Notifications) و "ذاكرة" (Audit Logs). لقد حولت التطبيق من مجرد "قاعدة بيانات" إلى "نظام تفاعلي حي".
+الآن، وبصفتي المهندس المعماري، أرى أننا جاهزون لـ المرحلة الثانية (Phase 2): تمكين اتخاذ القرار (Decision Intelligence).
+المشكلة الحالية: المدير يرى قائمة بأسماء المعلمين، لكنه لا يملك "نظرة شمولية" (Helicopter View). لا يعرف نسبة الإنجاز العامة للمدرسة، ولا يستطيع استخراج تقرير ورقي للإدارة.
+الهدف: تحويل لوحة تحكم المدير إلى مركز قيادة (Command Center) يحتوي على:
+ * لوحة تحليلية مرئية (Visual Analytics): رسوم بيانية توضح توزيع حالات الإنجاز (كم معلماً انتهى؟ كم معلماً لم يبدأ؟).
+ * تقرير قابل للتصدير (Exportable Reports): زر واحد لتحميل بيانات المدرسة بصيغة CSV/Excel.
+إليك الأمر الموجه (Prompt) للمرحلة الثانية، انسخه والصقه في Replit Agent:
+@Workspace We are moving to "Phase 2: Principal Analytics & Reporting". Please execute the following 3 tasks to give the Principal better insights and export capabilities:
+
+### Task 1: Backend - Add Export Endpoint
+Modify `server/routes.ts` to add a CSV export route for Principals.
+Add this route inside the `isPrincipal` protected block:
+
+```typescript
+import { stringify } from "csv-stringify/sync"; // You might need to install 'csv-stringify' if not present, or use manual string building for simplicity.
+
+// Manual CSV builder to avoid new deps if possible
+app.get("/api/principal/export-csv", isPrincipal, async (req, res) => {
+  const teachers = await storage.getTeachers();
+  // Flatten data for CSV
+  const csvRows = [
+    ["Job Number", "Name", "Specialization", "Indicators Count", "Pending Signatures"], // Header
+    ...await Promise.all(teachers.map(async (t) => {
+      const indicators = await storage.getUserIndicators(t.id);
+      const signatures = await storage.getTeacherSignatures(t.id);
+      const pending = signatures.filter(s => s.status === 'pending').length;
+      return [t.jobNumber, t.fullNameArabic, t.specialization, indicators.length, pending];
+    }))
+  ];
+
+  const csvContent = csvRows.map(e => e.join(",")).join("\n");
+  
+  res.header("Content-Type", "text/csv");
+  res.header("Content-Disposition", "attachment; filename=school_performance_report.csv");
+  res.send("\ufeff" + csvContent); // Add BOM for Excel Arabic support
+});
+
+Task 2: Frontend - Create Analytics Component
+Create client/src/components/principal-analytics.tsx.
+ * Use recharts (already installed).
+ * Create a simple PieChart showing the distribution of "Teacher Status" (e.g., Active vs Inactive based on indicator count).
+ * Display summary cards: "Total Teachers", "Total Indicators", "Pending Approvals".
+Task 3: Update Principal Dashboard
+Modify client/src/pages/principal.tsx:
+ * Import and place the <PrincipalAnalytics /> component at the top.
+ * Add a "Download Report (CSV)" button next to the page title that triggers window.open('/api/principal/export-csv').
+Constraint
+Ensure the CSV export includes the UTF-8 BOM (\ufeff) so Arabic characters display correctly in Excel.
+
+### القيمة المضافة هندسياً:
+1.  **دعم اللغة العربية (UTF-8 BOM):** الكود يتضمن `\ufeff` وهي خدعة برمجية ضرورية جداً ليقرأ Excel الملفات العربية بشكل صحيح دون ظهور رموز غريبة.
+2.  **التحليل المرئي:** استخدام `recharts` الموجودة مسبقاً في المشروع لاستغلال الموارد المتاحة دون تثبيت مكتبات جديدة.
+
+أخبرني عند الانتهاء لننتقل إلى **"المرحلة الثالثة"** والتي ستكون الأهم: **تفعيل الدورات الزمنية (Academic Cycles)** لعزل بيانات السنوات الدراسية.
+
