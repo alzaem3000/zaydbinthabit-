@@ -60,6 +60,12 @@ function Router() {
           <Route path="/auth" component={AuthPage} />
           <Route path="/login" component={AuthPage} />
           <Route path="/s/:token" component={SurveyResponsePage} />
+          <Route path="/:rest*">
+            {() => {
+              setLocation("/auth");
+              return null;
+            }}
+          </Route>
         </>
       ) : (
         <>
