@@ -37,6 +37,7 @@ function EvidenceUploadPanel({
     evidenceName,
     standardId,
     indicators,
+    indicatorsLoading,
     colorClass,
     onClose,
     onSuccess,
@@ -44,6 +45,7 @@ function EvidenceUploadPanel({
     evidenceName: string;
     standardId: number;
     indicators: IndicatorWithCriteria[];
+    indicatorsLoading: boolean;
     colorClass: { bg: string; text: string; border: string; badge: string };
     onClose: () => void;
     onSuccess: () => void;
@@ -132,8 +134,14 @@ function EvidenceUploadPanel({
                 </div>
             </div>
 
-            {/* Indicator selector — يعرض المؤشرات المرتبطة بالمعيار أولاً، يتراجع لعرض الكل إن لم يوجد */}
-            {autoIndicator ? (
+            {/* Indicator selector */}
+            {indicatorsLoading ? (
+                // جاري التحميل → skeleton
+                <div className={`mb-3 p-3 rounded-xl border-2 ${colorClass.border} ${colorClass.bg} flex items-center gap-2 animate-pulse`}>
+                    <div className="h-4 w-4 rounded bg-current opacity-20" />
+                    <div className="h-3 flex-1 rounded bg-current opacity-20" />
+                </div>
+            ) : autoIndicator ? (
                 // مؤشر واحد مرتبط → ربط تلقائي
                 <div className={`mb-3 p-2.5 rounded-xl border ${colorClass.border} ${colorClass.bg} flex items-center gap-2`}>
                     <CheckCircle className={`h-4 w-4 flex-shrink-0 ${colorClass.text}`} />
@@ -243,7 +251,7 @@ export default function StandardsPage() {
     const [openUpload, setOpenUpload] = useState<string | null>(null);
     const [uploadedKeys, setUploadedKeys] = useState<Set<string>>(new Set());
 
-    const { data: indicators = [] } = useQuery<IndicatorWithCriteria[]>({
+    const { data: indicators = [], isLoading: indicatorsLoading } = useQuery<IndicatorWithCriteria[]>({
         queryKey: ["/api/indicators"],
     });
 
@@ -403,6 +411,7 @@ export default function StandardsPage() {
                                                                 evidenceName={evidence}
                                                                 standardId={standard.id}
                                                                 indicators={indicators}
+                                                                indicatorsLoading={indicatorsLoading}
                                                                 colorClass={color}
                                                                 onClose={() => setOpenUpload(null)}
                                                                 onSuccess={() => {

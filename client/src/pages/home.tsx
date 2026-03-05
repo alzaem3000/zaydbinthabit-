@@ -108,7 +108,7 @@ const domainLabels: Record<string, string> = {
 import { WitnessUploadModal } from "@/components/witness-upload-modal";
 
 export default function Home() {
-  const { user } = useAuth();
+  const { user, logoutMutation } = useAuth();
   const { toast } = useToast();
   const [, navigate] = useLocation();
 
@@ -1085,9 +1085,9 @@ export default function Home() {
               <RotateCcw className="h-4 w-4" />
               إعادة تعيين
             </Button>
-            <Button variant="outline" className="gap-2" onClick={() => (window.location.href = '/api/logout')} data-testid="button-logout">
+            <Button variant="outline" className="gap-2" onClick={() => logoutMutation.mutate()} disabled={logoutMutation.isPending} data-testid="button-logout">
               <LogOut className="h-4 w-4" />
-              تسجيل الخروج
+              {logoutMutation.isPending ? "جاري الخروج..." : "تسجيل الخروج"}
             </Button>
           </div>
         </Card>
