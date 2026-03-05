@@ -132,15 +132,9 @@ function EvidenceUploadPanel({
                 </div>
             </div>
 
-            {/* Indicator selector — يعرض فقط المؤشرات المرتبطة بهذا المعيار */}
-            {relatedIndicators.length === 0 ? (
-                <div className={`mb-3 p-3 rounded-xl border-2 ${colorClass.border} ${colorClass.bg} text-center`}>
-                    <p className={`text-xs font-bold ${colorClass.text} mb-1`}>⚠️ لا يوجد مؤشر مرتبط بهذا المعيار</p>
-                    <p className="text-[11px] text-slate-500">
-                        أضف مؤشرًا وربطه بهذا المعيار من صفحة المؤشرات أولاً
-                    </p>
-                </div>
-            ) : autoIndicator ? (
+            {/* Indicator selector — يعرض المؤشرات المرتبطة بالمعيار أولاً، يتراجع لعرض الكل إن لم يوجد */}
+            {autoIndicator ? (
+                // مؤشر واحد مرتبط → ربط تلقائي
                 <div className={`mb-3 p-2.5 rounded-xl border ${colorClass.border} ${colorClass.bg} flex items-center gap-2`}>
                     <CheckCircle className={`h-4 w-4 flex-shrink-0 ${colorClass.text}`} />
                     <div className="flex-1 text-right min-w-0">
@@ -148,19 +142,43 @@ function EvidenceUploadPanel({
                         <p className={`text-xs font-bold truncate ${colorClass.text}`}>{autoIndicator.title}</p>
                     </div>
                 </div>
+            ) : indicators.length === 0 ? (
+                // لا توجد مؤشرات أصلاً → إخفاء كامل
+                <div className={`mb-3 p-3 rounded-xl border-2 ${colorClass.border} ${colorClass.bg} text-center`}>
+                    <p className={`text-xs font-bold ${colorClass.text} mb-1`}>⚠️ لا توجد مؤشرات بعد</p>
+                    <p className="text-[11px] text-slate-500">أضف مؤشراً أولاً من لوحة التحكم</p>
+                </div>
             ) : (
+                // عرض كل المؤشرات مع تمييز المرتبطة بهذا المعيار
                 <div className="mb-3">
-                    <Label className="text-xs font-bold mb-1.5 block">اختر المؤشر المناسب لهذا المعيار</Label>
+                    <Label className="text-xs font-bold mb-1.5 block">
+                        {relatedIndicators.length > 0
+                            ? `اختر المؤشر لهذا المعيار (${relatedIndicators.length} مرتبط)`
+                            : "اختر المؤشر"}
+                    </Label>
                     <Select value={selectedIndicatorId} onValueChange={setSelectedIndicatorId}>
                         <SelectTrigger className="h-9 text-sm">
-                            <SelectValue placeholder="اختر من مؤشراتك لهذا المعيار..." />
+                            <SelectValue placeholder="اختر مؤشراً..." />
                         </SelectTrigger>
                         <SelectContent>
-                            {relatedIndicators.map(ind => (
-                                <SelectItem key={ind.id} value={ind.id}>
-                                    <span className="text-xs">{ind.title}</span>
-                                </SelectItem>
-                            ))}
+                            {relatedIndicators.length > 0 && (
+                                <>
+                                    <div className="px-2 py-1 text-[10px] text-muted-foreground font-bold">مرتبط بهذا المعيار ✓</div>
+                                    {relatedIndicators.map(ind => (
+                                        <SelectItem key={ind.id} value={ind.id}>
+                                            <span className="text-xs font-medium">{ind.title}</span>
+                                        </SelectItem>
+                                    ))}
+                                    <div className="px-2 py-1 text-[10px] text-muted-foreground font-bold border-t mt-1 pt-1">مؤشرات أخرى</div>
+                                </>
+                            )}
+                            {indicators
+                                .filter(ind => !relatedIndicators.find(r => r.id === ind.id))
+                                .map(ind => (
+                                    <SelectItem key={ind.id} value={ind.id}>
+                                        <span className="text-xs">{ind.title}</span>
+                                    </SelectItem>
+                                ))}
                         </SelectContent>
                     </Select>
                 </div>
@@ -203,14 +221,16 @@ function EvidenceUploadPanel({
                 </TabsContent>
             </Tabs>
 
-            {/* Submit */}
-            <Button
-                onClick={() => uploadMutation.mutate()}
-                disabled={!canSubmit || uploadMutation.isPending}
-                className={`w-full mt-3 h-9 text-sm font-bold text-white ${colorClass.badge}`}
-            >
-                {uploadMutation.isPending ? "جاري الرفع..." : "حفظ الشاهد ✓"}
-            </Button>
+            {/* Submit — إخفاء الزر فقط إن لم يوجد أي مؤشر أصلاً */}
+            {indicators.length > 0 && (
+                <Button
+                    onClick={() => uploadMutation.mutate()}
+                    disabled={!canSubmit || uploadMutation.isPending}
+                    className={`w-full mt-3 h-9 text-sm font-bold text-white ${colorClass.badge}`}
+                >
+                    {uploadMutation.isPending ? "جاري الرفع..." : "حفظ الشاهد ✓"}
+                </Button>
+            )}
         </div>
     );
 }
