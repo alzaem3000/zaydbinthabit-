@@ -101,6 +101,25 @@ OPENID_ISSUER=https://your-issuer.com
 
 **رابط التطبيق**: سيكون على شكل `https://osint-lab-pro-v2.onrender.com`
 
+## 🚀 النشر على Netlify (موصى به للواجهات الأمامية والخلفية المدمجة) ⭐⭐⭐
+
+لقد تم تهيئة هذا المشروع ليعمل بكفاءة عالية على منصة Netlify باستخدام `netlify/functions` لدعم الواجهة الخلفية (Express) مع الواجهة الأمامية (React).
+
+### الخطوات:
+
+1. **ربط المستودع**: قم بزيارة [Netlify](https://netlify.com) واربط مستودع GitHub الخاص بالمشروع.
+2. **إعدادات البناء (Build Settings)**:
+   - **Build command**: `npm run build`
+   - **Publish directory**: `dist/public`
+   - **Functions directory**: `netlify/functions`
+3. **متغيرات البيئة (Environment Variables)**:
+   من لوحة تحكم Netlify (Site settings > Environment variables)، يجب إضافة المتغيرات التالية:
+   - `DATABASE_URL`: رابط الاتصال بقاعدة بيانات Postgres (مثل Neon) **يجب أن ينتهي بـ `?sslmode=require`**. ولحل مشكلة الاتصال البطيئة (Infinite Loading)، يُنصح بالاعتماد على رابط برك الاتصال (Pooler URL) وليس الرابط المباشر.
+   - `SESSION_SECRET`: مفتاح أمان الجلسات (مثال: `zayd-ibn-thabit-super-secret-2026`).
+   - `ADMIN_PASSWORD`: كلمة المرور الخاصة بدخول المدير (مثال: `Zayd12345`).
+   - `CREATOR_PASSWORD`: كلمة المرور الخاصة بمنشئ النظام.
+4. **التوجيه الديناميكي (Dynamic Routing)**: المشروع يعتمد الآن على تحويل المتصفح التلقائي غير المصرح لهم بالدخول إلى المسارات المحمية مثل `/principal` إلى واجهة المصادقة والتسجيل `/auth` بصورة أنيقة بدل ظهور رسالة `404 Not Found`.
+
 ## 🗄️ قاعدة البيانات - Neon (موصى به) ⭐⭐⭐
 
 ### لماذا Neon؟

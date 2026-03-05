@@ -86,6 +86,7 @@ export const witnesses = pgTable("witnesses", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   indicatorId: varchar("indicator_id").references(() => indicators.id, { onDelete: "cascade" }),
   criteriaId: varchar("criteria_id").references(() => criteria.id, { onDelete: "cascade" }),
+  performanceStandardId: integer("performance_standard_id").references(() => performanceStandards.id, { onDelete: "cascade" }),
   title: varchar("title", { length: 255 }).notNull(),
   description: text("description"),
   fileUrl: text("file_url"), // Changed to text for Base64 support
@@ -95,6 +96,7 @@ export const witnesses = pgTable("witnesses", {
   userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at").defaultNow(),
 });
+
 
 // Nafes Files - أعمال نافس
 export const nafesFiles = pgTable("nafes_files", {

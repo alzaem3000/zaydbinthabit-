@@ -1,22 +1,20 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
     ArrowRight, FileCheck, ChevronDown, ChevronUp, Upload, Link as LinkIcon,
     X, CheckCircle2, Briefcase, Users, UserCheck, Lightbulb, TrendingUp,
-    Calendar, Monitor, Home, UserCog, BarChart, CheckCircle
+    Calendar, Monitor, Home, UserCog, BarChart
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import imageCompression from "browser-image-compression";
 import { PERFORMANCE_STANDARDS_FALLBACK } from "@/lib/constants";
-import type { IndicatorWithCriteria } from "@shared/schema";
+
 
 const ICON_COLORS = [
     { bg: "bg-blue-100 dark:bg-blue-950", text: "text-blue-600 dark:text-blue-400", border: "border-blue-200 dark:border-blue-800", badge: "bg-blue-600" },
@@ -36,34 +34,20 @@ const ICON_COLORS = [
 function EvidenceUploadPanel({
     evidenceName,
     standardId,
-    indicators,
-    indicatorsLoading,
     colorClass,
     onClose,
     onSuccess,
 }: {
     evidenceName: string;
     standardId: number;
-    indicators: IndicatorWithCriteria[];
-    indicatorsLoading: boolean;
     colorClass: { bg: string; text: string; border: string; badge: string };
     onClose: () => void;
     onSuccess: () => void;
 }) {
-    // تصفية المؤشرات لعرض المرتبطة بهذا المعيار فقط
-    const relatedIndicators = indicators.filter(
-        (ind) => ind.performanceStandardId === standardId
-    );
-    const autoIndicator = relatedIndicators.length === 1 ? relatedIndicators[0] : null;
-
     const [uploadType, setUploadType] = useState<"file" | "link">("file");
     const [file, setFile] = useState<File | null>(null);
     const [fileData, setFileData] = useState<string | null>(null);
     const [link, setLink] = useState("");
-    // إذا كان هناك مؤشر واحد فقط، يُختار تلقائيًا
-    const [selectedIndicatorId, setSelectedIndicatorId] = useState<string>(
-        autoIndicator ? autoIndicator.id : ""
-    );
     const [isCompressing, setIsCompressing] = useState(false);
     const { toast } = useToast();
     const queryClient = useQueryClient();
@@ -74,11 +58,7 @@ function EvidenceUploadPanel({
             let finalFile = original;
             if (original.type.startsWith("image/")) {
                 setIsCompressing(true);
-                toast({
-                    title: "جاري المعالجة",
-                    description: "يتم الآن ضغط الصورة لتقليل حجمها...",
-                    duration: 3000,
-                });
+                toast({ title: "جاري المعالجة", description: "يتم ضغط الصورة...", duration: 3000 });
                 try {
                     finalFile = await imageCompression(original, { maxSizeMB: 0.8, maxWidthOrHeight: 1920, useWebWorker: true });
                 } catch { /* use original */ } finally { setIsCompressing(false); }
@@ -90,24 +70,19 @@ function EvidenceUploadPanel({
         }
     };
 
-    const effectiveIndicatorId = autoIndicator ? autoIndicator.id : selectedIndicatorId;
-
     const uploadMutation = useMutation({
         mutationFn: async () => {
-            if (!effectiveIndicatorId) throw new Error("لا يوجد مؤشر مرتبط بهذا المعيار");
             const payload = {
                 title: evidenceName,
-                description: evidenceName,
-                indicatorId: effectiveIndicatorId,
                 fileType: uploadType === "file" ? (file ? file.type.split("/")[1] : "unknown") : "link",
                 fileName: uploadType === "file" ? (file?.name || "witness") : "link",
                 fileData: uploadType === "file" ? fileData : null,
                 link: uploadType === "link" ? link : null,
             };
-            await apiRequest("POST", `/api/indicators/${effectiveIndicatorId}/witnesses`, payload);
+            await apiRequest("POST", `/api/standards/${standardId}/witnesses`, payload);
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["/api/indicators"] });
+            queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
             toast({ title: "✅ تم الرفع", description: `تم رفع "${evidenceName}" بنجاح` });
             onSuccess();
         },
@@ -116,10 +91,7 @@ function EvidenceUploadPanel({
         },
     });
 
-    const canSubmit = effectiveIndicatorId && (
-        (uploadType === "file" && !!fileData) ||
-        (uploadType === "link" && link.startsWith("http"))
-    );
+    const canSubmit = (uploadType === "file" && !!fileData) || (uploadType === "link" && link.startsWith("http"));
 
     return (
         <div className={`mt-2 rounded-xl border-2 ${colorClass.border} bg-white dark:bg-slate-900 shadow-md p-4 animate-in fade-in slide-in-from-top-2 duration-200`}>
@@ -133,64 +105,6 @@ function EvidenceUploadPanel({
                     <p className={`text-xs truncate max-w-[260px] ${colorClass.text}`}>{evidenceName}</p>
                 </div>
             </div>
-
-            {/* Indicator selector */}
-            {indicatorsLoading ? (
-                // جاري التحميل → skeleton
-                <div className={`mb-3 p-3 rounded-xl border-2 ${colorClass.border} ${colorClass.bg} flex items-center gap-2 animate-pulse`}>
-                    <div className="h-4 w-4 rounded bg-current opacity-20" />
-                    <div className="h-3 flex-1 rounded bg-current opacity-20" />
-                </div>
-            ) : autoIndicator ? (
-                // مؤشر واحد مرتبط → ربط تلقائي
-                <div className={`mb-3 p-2.5 rounded-xl border ${colorClass.border} ${colorClass.bg} flex items-center gap-2`}>
-                    <CheckCircle className={`h-4 w-4 flex-shrink-0 ${colorClass.text}`} />
-                    <div className="flex-1 text-right min-w-0">
-                        <p className="text-[10px] text-slate-500">سيُرفع للمؤشر المرتبط تلقائيًا</p>
-                        <p className={`text-xs font-bold truncate ${colorClass.text}`}>{autoIndicator.title}</p>
-                    </div>
-                </div>
-            ) : indicators.length === 0 ? (
-                // لا توجد مؤشرات أصلاً → إخفاء كامل
-                <div className={`mb-3 p-3 rounded-xl border-2 ${colorClass.border} ${colorClass.bg} text-center`}>
-                    <p className={`text-xs font-bold ${colorClass.text} mb-1`}>⚠️ لا توجد مؤشرات بعد</p>
-                    <p className="text-[11px] text-slate-500">أضف مؤشراً أولاً من لوحة التحكم</p>
-                </div>
-            ) : (
-                // عرض كل المؤشرات مع تمييز المرتبطة بهذا المعيار
-                <div className="mb-3">
-                    <Label className="text-xs font-bold mb-1.5 block">
-                        {relatedIndicators.length > 0
-                            ? `اختر المؤشر لهذا المعيار (${relatedIndicators.length} مرتبط)`
-                            : "اختر المؤشر"}
-                    </Label>
-                    <Select value={selectedIndicatorId} onValueChange={setSelectedIndicatorId}>
-                        <SelectTrigger className="h-9 text-sm">
-                            <SelectValue placeholder="اختر مؤشراً..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {relatedIndicators.length > 0 && (
-                                <>
-                                    <div className="px-2 py-1 text-[10px] text-muted-foreground font-bold">مرتبط بهذا المعيار ✓</div>
-                                    {relatedIndicators.map(ind => (
-                                        <SelectItem key={ind.id} value={ind.id}>
-                                            <span className="text-xs font-medium">{ind.title}</span>
-                                        </SelectItem>
-                                    ))}
-                                    <div className="px-2 py-1 text-[10px] text-muted-foreground font-bold border-t mt-1 pt-1">مؤشرات أخرى</div>
-                                </>
-                            )}
-                            {indicators
-                                .filter(ind => !relatedIndicators.find(r => r.id === ind.id))
-                                .map(ind => (
-                                    <SelectItem key={ind.id} value={ind.id}>
-                                        <span className="text-xs">{ind.title}</span>
-                                    </SelectItem>
-                                ))}
-                        </SelectContent>
-                    </Select>
-                </div>
-            )}
 
             {/* Upload type tabs */}
             <Tabs value={uploadType} onValueChange={(v: any) => setUploadType(v)}>
@@ -229,16 +143,14 @@ function EvidenceUploadPanel({
                 </TabsContent>
             </Tabs>
 
-            {/* Submit — إخفاء الزر فقط إن لم يوجد أي مؤشر أصلاً */}
-            {indicators.length > 0 && (
-                <Button
-                    onClick={() => uploadMutation.mutate()}
-                    disabled={!canSubmit || uploadMutation.isPending}
-                    className={`w-full mt-3 h-9 text-sm font-bold text-white ${colorClass.badge}`}
-                >
-                    {uploadMutation.isPending ? "جاري الرفع..." : "حفظ الشاهد ✓"}
-                </Button>
-            )}
+            {/* Submit */}
+            <Button
+                onClick={() => uploadMutation.mutate()}
+                disabled={!canSubmit || uploadMutation.isPending}
+                className={`w-full mt-3 h-9 text-sm font-bold text-white ${colorClass.badge}`}
+            >
+                {uploadMutation.isPending ? "جاري الرفع..." : "حفظ الشاهد ✓"}
+            </Button>
         </div>
     );
 }
@@ -250,10 +162,6 @@ export default function StandardsPage() {
     // Track which evidence example has its upload panel open: key = `${standardId}-${evidenceIdx}`
     const [openUpload, setOpenUpload] = useState<string | null>(null);
     const [uploadedKeys, setUploadedKeys] = useState<Set<string>>(new Set());
-
-    const { data: indicators = [], isLoading: indicatorsLoading } = useQuery<IndicatorWithCriteria[]>({
-        queryKey: ["/api/indicators"],
-    });
 
     const toggleCard = (id: number) => {
         setExpandedCards(prev => {
@@ -410,8 +318,6 @@ export default function StandardsPage() {
                                                             <EvidenceUploadPanel
                                                                 evidenceName={evidence}
                                                                 standardId={standard.id}
-                                                                indicators={indicators}
-                                                                indicatorsLoading={indicatorsLoading}
                                                                 colorClass={color}
                                                                 onClose={() => setOpenUpload(null)}
                                                                 onSuccess={() => {

@@ -616,6 +616,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // POST /api/standards/:id/witnesses — رفع شاهد مرتبط بمعيار مباشرة (بدون مؤشر)
+  app.post("/api/standards/:id/witnesses", isAuthenticated, async (req, res) => {
+    try {
+      const userId = await getUserIdFromRequest(req);
+      if (!userId) return res.status(401).json({ message: "Unauthorized" });
+
+      const standardId = parseInt(req.params.id);
+      if (isNaN(standardId)) return res.status(400).json({ message: "معرف المعيار غير صحيح" });
+
+      const { title, fileType, fileData, fileName, link } = req.body;
+      const fileUrlToStore = fileData || null;
+
+      if (!fileUrlToStore && !link) {
+        return res.status(400).json({ message: "يجب اختيار ملف أو إضافة رابط" });
+      }
+
+      const witness = await storage.createWitness({
+        title: title || "شاهد",
+        description: title || "شاهد",
+        indicatorId: null,
+        performanceStandardId: standardId,
+        criteriaId: null,
+        fileType: fileType || (link ? "link" : "unknown"),
+        fileUrl: fileUrlToStore,
+        fileName: fileName || null,
+        link: link || null,
+        userId,
+      });
+
+      res.json(witness);
+    } catch (error) {
+      console.error("Error creating standard witness:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   app.delete("/api/witnesses/:id", isAuthenticated, async (req, res) => {
     try {
       const userId = await getUserIdFromRequest(req);
