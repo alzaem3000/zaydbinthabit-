@@ -626,7 +626,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (isNaN(standardId)) return res.status(400).json({ message: "معرف المعيار غير صحيح" });
 
       const { title, fileType, fileData, fileName, link } = req.body;
-      const fileUrlToStore = fileData || null;
+      const fileUrlToStore = fileData || undefined;
 
       if (!fileUrlToStore && !link) {
         return res.status(400).json({ message: "يجب اختيار ملف أو إضافة رابط" });
@@ -635,13 +635,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const witness = await storage.createWitness({
         title: title || "شاهد",
         description: title || "شاهد",
-        indicatorId: null,
         performanceStandardId: standardId,
-        criteriaId: null,
         fileType: fileType || (link ? "link" : "unknown"),
         fileUrl: fileUrlToStore,
-        fileName: fileName || null,
-        link: link || null,
+        fileName: fileName || undefined,
+        link: link || undefined,
         userId,
       });
 
