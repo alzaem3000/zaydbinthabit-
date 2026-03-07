@@ -9,11 +9,11 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import type { IndicatorWithCriteria, Witness } from "@shared/schema";
-import { 
-  CheckCircle2, 
-  FileText, 
-  Image, 
-  Video, 
+import {
+  CheckCircle2,
+  FileText,
+  Image,
+  Video,
   File,
   Download,
   Plus
@@ -27,9 +27,9 @@ interface IndicatorDetailsModalProps {
   onAddWitness?: (indicatorId: string) => void;
 }
 
-export function IndicatorDetailsModal({ 
-  open, 
-  onOpenChange, 
+export function IndicatorDetailsModal({
+  open,
+  onOpenChange,
   indicator,
   witnesses = [],
   onAddWitness
@@ -87,14 +87,14 @@ export function IndicatorDetailsModal({
           {indicator.criteria && indicator.criteria.length > 0 && (
             <div>
               <div className="flex items-center justify-between mb-3">
-                <h3 className="font-bold text-foreground">المعايير</h3>
+                <h3 className="font-bold text-foreground">بنود الإنجاز</h3>
                 <span className="text-sm text-muted-foreground">
                   {completedCriteria} / {totalCriteria} مكتمل
                 </span>
               </div>
               <div className="space-y-2">
                 {indicator.criteria.map((criterion) => (
-                  <div 
+                  <div
                     key={criterion.id}
                     className="flex items-center gap-3 p-3 bg-muted/50 rounded-md"
                     data-testid={`detail-criteria-${criterion.id}`}
@@ -116,8 +116,8 @@ export function IndicatorDetailsModal({
           <div>
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-bold text-foreground">الشواهد المرفقة</h3>
-              <Button 
-                size="sm" 
+              <Button
+                size="sm"
                 onClick={() => onAddWitness?.(indicator.id)}
                 className="gap-1"
                 data-testid="button-add-witness-details"
@@ -126,7 +126,7 @@ export function IndicatorDetailsModal({
                 إضافة شاهد
               </Button>
             </div>
-            
+
             {witnesses.length === 0 ? (
               <Card className="p-6 text-center bg-muted/30" data-testid="text-no-witnesses">
                 <FileText className="h-10 w-10 mx-auto mb-2 text-muted-foreground" />
@@ -135,7 +135,7 @@ export function IndicatorDetailsModal({
             ) : (
               <div className="space-y-3">
                 {witnesses.map((witness) => (
-                  <Card 
+                  <Card
                     key={witness.id}
                     className="p-4 hover-elevate"
                     data-testid={`witness-card-${witness.id}`}
@@ -153,9 +153,9 @@ export function IndicatorDetailsModal({
                         )}
                         {witness.fileUrl && witness.fileType === "image" && (
                           <div className="mt-2 mb-2">
-                            <img 
-                              src={witness.fileUrl} 
-                              alt={witness.title} 
+                            <img
+                              src={witness.fileUrl}
+                              alt={witness.title}
                               className="max-w-full h-auto rounded-md shadow-sm border border-border"
                             />
                           </div>
@@ -167,8 +167,8 @@ export function IndicatorDetailsModal({
                         )}
                       </div>
                       {witness.fileUrl && (
-                        <Button 
-                          size="icon" 
+                        <Button
+                          size="icon"
                           variant="ghost"
                           data-testid={`button-download-${witness.id}`}
                         >
@@ -184,8 +184,8 @@ export function IndicatorDetailsModal({
         </div>
 
         <div className="flex justify-end pt-4 border-t border-border">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => onOpenChange(false)}
             data-testid="button-close-details"
           >

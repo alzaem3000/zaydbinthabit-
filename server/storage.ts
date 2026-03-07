@@ -178,7 +178,25 @@ export class DatabaseStorage implements IStorage {
 
     for (const indicator of indicatorsList) {
       const criteriaList = await db.select().from(criteria).where(eq(criteria.indicatorId, indicator.id)).orderBy(criteria.order);
-      const witnessList = await db.select().from(witnesses).where(eq(witnesses.indicatorId, indicator.id));
+
+      const exactWitnesses = await db.select().from(witnesses).where(eq(witnesses.indicatorId, indicator.id));
+      let standardWitnesses: any[] = [];
+      if (indicator.performanceStandardId && indicator.userId) {
+        standardWitnesses = await db.select().from(witnesses).where(
+          and(
+            eq(witnesses.performanceStandardId, indicator.performanceStandardId),
+            eq(witnesses.userId, indicator.userId)
+          )
+        );
+      }
+
+      const allWitnesses = [...exactWitnesses];
+      for (const sw of standardWitnesses) {
+        if (!allWitnesses.find(w => w.id === sw.id)) {
+          allWitnesses.push(sw);
+        }
+      }
+
       const performanceStandardInfo = indicator.performanceStandardId
         ? await db.select().from(performanceStandards).where(eq(performanceStandards.id, indicator.performanceStandardId)).limit(1).then(res => res[0])
         : undefined;
@@ -186,7 +204,7 @@ export class DatabaseStorage implements IStorage {
       result.push({
         ...indicator,
         criteria: criteriaList,
-        witnesses: witnessList,
+        witnesses: allWitnesses,
         performanceStandard: performanceStandardInfo,
       });
     }
@@ -263,7 +281,25 @@ export class DatabaseStorage implements IStorage {
 
   async getWitnesses(indicatorId?: string): Promise<Witness[]> {
     if (indicatorId) {
-      return db.select().from(witnesses).where(eq(witnesses.indicatorId, indicatorId));
+      const indicator = await this.getIndicator(indicatorId);
+      const exactWitnesses = await db.select().from(witnesses).where(eq(witnesses.indicatorId, indicatorId));
+      let standardWitnesses: Witness[] = [];
+      if (indicator && indicator.performanceStandardId && indicator.userId) {
+        standardWitnesses = await db.select().from(witnesses).where(
+          and(
+            eq(witnesses.performanceStandardId, indicator.performanceStandardId),
+            eq(witnesses.userId, indicator.userId)
+          )
+        );
+      }
+
+      const allWitnesses = [...exactWitnesses];
+      for (const sw of standardWitnesses) {
+        if (!allWitnesses.find(w => w.id === sw.id)) {
+          allWitnesses.push(sw);
+        }
+      }
+      return allWitnesses;
     }
     return db.select().from(witnesses);
   }

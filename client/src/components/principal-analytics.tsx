@@ -27,25 +27,25 @@ export function PrincipalAnalytics({ stats, teachers }: PrincipalAnalyticsProps)
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <SummaryCard 
-          title="إجمالي المعلمين" 
-          value={stats.totalTeachers} 
-          icon={<Users className="h-5 w-5 text-blue-500" />} 
+        <SummaryCard
+          title="إجمالي المعلمين"
+          value={stats.totalTeachers}
+          icon={<Users className="h-5 w-5 text-blue-500" />}
         />
-        <SummaryCard 
-          title="إجمالي المؤشرات" 
-          value={stats.totalIndicators} 
-          icon={<Target className="h-5 w-5 text-primary" />} 
+        <SummaryCard
+          title="إجمالي المعايير"
+          value={stats.totalIndicators}
+          icon={<Target className="h-5 w-5 text-primary" />}
         />
-        <SummaryCard 
-          title="بانتظار الاعتماد" 
-          value={stats.pendingApprovals} 
-          icon={<Clock className="h-5 w-5 text-yellow-500" />} 
+        <SummaryCard
+          title="بانتظار الاعتماد"
+          value={stats.pendingApprovals}
+          icon={<Clock className="h-5 w-5 text-yellow-500" />}
         />
-        <SummaryCard 
-          title="مؤشرات معتمدة" 
-          value={stats.approvedIndicators} 
-          icon={<CheckCircle2 className="h-5 w-5 text-green-500" />} 
+        <SummaryCard
+          title="معايير معتمدة"
+          value={stats.approvedIndicators}
+          icon={<CheckCircle2 className="h-5 w-5 text-green-500" />}
         />
       </div>
 
@@ -79,7 +79,7 @@ export function PrincipalAnalytics({ stats, teachers }: PrincipalAnalyticsProps)
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-medium">حالات المؤشرات</CardTitle>
+            <CardTitle className="text-sm font-medium">حالات المعايير</CardTitle>
           </CardHeader>
           <CardContent className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">

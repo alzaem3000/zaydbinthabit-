@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -121,6 +122,7 @@ export default function Home() {
   const [printOpen, setPrintOpen] = useState(false);
   const [printFilterCompleted, setPrintFilterCompleted] = useState(false);
   const [expandedIndicator, setExpandedIndicator] = useState<string | null>(null);
+  const [previewWitness, setPreviewWitness] = useState<Witness | null>(null);
   const [activeTab, setActiveTab] = useState("competencies");
   const [profileForm, setProfileForm] = useState({
     fullNameArabic: "",
@@ -240,7 +242,7 @@ export default function Home() {
       queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
     },
     onError: () => {
-      toast({ title: "خطأ", description: "فشل في تحديث المعيار", variant: "destructive" });
+      toast({ title: "خطأ", description: "فشل في تحديث بند الإنجاز", variant: "destructive" });
     },
   });
 
@@ -384,7 +386,7 @@ export default function Home() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/indicators"] });
       queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
-      toast({ title: "تم إعادة التعيين", description: "تم إعادة تعيين المعايير والشواهد" });
+      toast({ title: "تم إعادة التعيين", description: "تم إعادة تعيين بنود الإنجاز والشواهد" });
     },
   });
 
@@ -538,7 +540,7 @@ export default function Home() {
                   <div className="mb-4">
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="text-xs text-muted-foreground">
-                        {completedCriteria} / {totalCriteria} معيار
+                        {completedCriteria} / {totalCriteria} بند إنجاز
                       </span>
                       <span className={`text-xs font-bold ${completionPct === 100 ? "text-green-600" : "text-muted-foreground"}`}>
                         {completionPct}%
@@ -677,7 +679,7 @@ export default function Home() {
 
                   <div className="mb-6 p-4 bg-muted/20 rounded-lg">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium">نسبة إنجاز المعايير</span>
+                      <span className="text-sm font-medium">نسبة إنجاز بنود الأداء</span>
                       <span className="text-sm font-bold">{completionPct}%</span>
                     </div>
                     <Progress value={completionPct} className="h-3" />
@@ -777,19 +779,29 @@ export default function Home() {
                                 </div>
                                 <div className="flex gap-1 shrink-0">
                                   {witness.fileUrl && (
-                                    <Button
-                                      size="icon"
-                                      variant="ghost"
-                                      onClick={() => {
-                                        const link = document.createElement("a");
-                                        link.href = witness.fileUrl!;
-                                        link.download = witness.fileName || "شاهد";
-                                        link.click();
-                                      }}
-                                      data-testid={`button-download-witness-${witness.id}`}
-                                    >
-                                      <Download className="h-4 w-4" />
-                                    </Button>
+                                    <>
+                                      <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        onClick={() => setPreviewWitness(witness)}
+                                        data-testid={`button-preview-witness-${witness.id}`}
+                                      >
+                                        <Eye className="h-4 w-4" />
+                                      </Button>
+                                      <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        onClick={() => {
+                                          const link = document.createElement("a");
+                                          link.href = witness.fileUrl!;
+                                          link.download = witness.fileName || "شاهد";
+                                          link.click();
+                                        }}
+                                        data-testid={`button-download-witness-${witness.id}`}
+                                      >
+                                        <Download className="h-4 w-4" />
+                                      </Button>
+                                    </>
                                   )}
                                   <Button
                                     size="icon"
@@ -837,7 +849,7 @@ export default function Home() {
             <div className="flex items-center gap-6">
               <div className="text-center">
                 <div className="text-4xl font-extrabold">{currentStats.totalIndicators}</div>
-                <div className="text-sm text-white/80 mt-1">المؤشرات</div>
+                <div className="text-sm text-white/80 mt-1">المعايير</div>
               </div>
               <div className="w-px h-12 bg-white/20 hidden md:block"></div>
               <div className="text-center">
@@ -1092,29 +1104,7 @@ export default function Home() {
           </div>
         </Card>
 
-        <Card className="p-6 mb-6" data-testid="section-indicators">
-          <Tabs value={activeTab} onValueChange={setActiveTab} dir="rtl">
-            <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-              <TabsList className="grid grid-cols-1 w-auto">
-                <TabsTrigger value="competencies" className="gap-2 px-6" data-testid="tab-competencies">
-                  <Award className="h-4 w-4" />
-                  الجدارات
-                </TabsTrigger>
-              </TabsList>
-            </div>
 
-            <TabsContent value="competencies">
-              <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-                <Button onClick={() => handleAddIndicator("competency")} style={{ backgroundColor: "#006C35" }} className="gap-2" data-testid="button-add-competency">
-                  <Plus className="h-4 w-4" />
-                  إضافة جدارة جديدة
-                </Button>
-                <h3 className="text-lg font-bold" style={{ color: "#006C35" }}>الجدارات المهنية</h3>
-              </div>
-              {renderIndicatorGrid(competencyIndicators, "competency")}
-            </TabsContent>
-          </Tabs>
-        </Card>
 
         <footer className="text-center py-8 border-t border-border" data-testid="footer">
           <p className="text-muted-foreground">نظام ميثاق الأداء الوظيفي</p>
@@ -1156,6 +1146,36 @@ export default function Home() {
         user={user || undefined}
         filterCompleted={printFilterCompleted}
       />
+
+      <Dialog open={!!previewWitness} onOpenChange={(open) => !open && setPreviewWitness(null)}>
+        <DialogContent className="max-w-4xl h-[80vh] flex flex-col p-0">
+          <DialogHeader className="p-4 border-b">
+            <DialogTitle>معاينة الشاهد: {previewWitness?.title}</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-auto p-4 flex items-center justify-center bg-accent/20">
+            {previewWitness?.fileUrl ? (
+              previewWitness.fileUrl.startsWith("data:image/") ? (
+                <img src={previewWitness.fileUrl} alt="Preview" className="max-w-full max-h-full object-contain rounded-lg shadow-sm" />
+              ) : previewWitness.fileUrl.startsWith("data:application/pdf") ? (
+                <iframe src={previewWitness.fileUrl} className="w-full h-full rounded-lg shadow-sm" title="PDF Preview" />
+              ) : (
+                <div className="text-center p-8">
+                  <File className="h-16 w-16 mx-auto text-muted-foreground mb-4 opacity-50" />
+                  <p className="font-medium">هذا النوع من الملفات لا يدعم المعاينة المباشرة</p>
+                  <Button variant="outline" className="mt-4" onClick={() => {
+                    const link = document.createElement("a");
+                    link.href = previewWitness.fileUrl!;
+                    link.download = previewWitness.fileName || "شاهد";
+                    link.click();
+                  }}>
+                    تحميل الملف
+                  </Button>
+                </div>
+              )
+            ) : null}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

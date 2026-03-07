@@ -125,7 +125,7 @@ export const PrintableCharter = forwardRef<HTMLDivElement, PrintableCharterProps
                   <th className="border border-gray-300 p-2">الهدف</th>
                   <th className="border border-gray-300 p-2 w-16">الوزن</th>
                   <th className="border border-gray-300 p-2">المخرج المستهدف</th>
-                  <th className="border border-gray-300 p-2">نتاجات الأداء (المعايير)</th>
+                  <th className="border border-gray-300 p-2">نتاجات الأداء (بنود الإنجاز)</th>
                   <th className="border border-gray-300 p-2 w-16">الحالة</th>
                 </tr>
               </thead>
@@ -198,7 +198,7 @@ export const PrintableCharter = forwardRef<HTMLDivElement, PrintableCharterProps
                   <th className="border border-gray-300 p-2">الجدارة</th>
                   <th className="border border-gray-300 p-2 w-16">الوزن</th>
                   <th className="border border-gray-300 p-2">المجال</th>
-                  <th className="border border-gray-300 p-2">نتاجات الأداء (المعايير)</th>
+                  <th className="border border-gray-300 p-2">نتاجات الأداء (بنود الإنجاز)</th>
                   <th className="border border-gray-300 p-2 w-16">الحالة</th>
                 </tr>
               </thead>

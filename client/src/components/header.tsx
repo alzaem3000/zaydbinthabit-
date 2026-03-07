@@ -1,10 +1,10 @@
 import { Card } from "@/components/ui/card";
 import type { DashboardStats, User } from "@shared/schema";
-import { 
-  BookOpen, 
-  RefreshCw, 
-  Target, 
-  CheckCircle2 
+import {
+  BookOpen,
+  RefreshCw,
+  Target,
+  CheckCircle2
 } from "lucide-react";
 import { NotificationsPopover } from "./notifications-popover";
 import { ThemeToggle } from "./theme-toggle";
@@ -15,10 +15,10 @@ interface HeaderProps {
 }
 
 export function Header({ stats, user }: HeaderProps) {
-  const principalName = user?.firstName && user?.lastName 
+  const principalName = user?.firstName && user?.lastName
     ? `${user.firstName} ${user.lastName}`
     : "غير محدد";
-    
+
   const schoolName = user?.schoolName || "غير محدد";
 
   return (
@@ -34,37 +34,37 @@ export function Header({ stats, user }: HeaderProps) {
         <h2 className="text-lg md:text-xl font-medium text-accent mb-6" data-testid="text-page-title">
           توثيق شواهد الأداء الوظيفي
         </h2>
-        
+
         <div className="p-4 bg-muted rounded-lg mb-6">
           <div className="text-center p-3" data-testid="text-principal-info">
             <span className="font-bold text-foreground">مدير المدرسة:</span>
             <span className="text-muted-foreground mr-2">{principalName}</span>
           </div>
         </div>
-        
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatCard 
+          <StatCard
             icon={<BookOpen className="h-6 w-6" />}
-            value={stats.totalCapabilities} 
-            label="إجمالي القدرات" 
+            value={stats.totalCapabilities}
+            label="إجمالي القدرات"
             testId="stat-capabilities"
           />
-          <StatCard 
+          <StatCard
             icon={<RefreshCw className="h-6 w-6" />}
-            value={stats.totalChanges} 
-            label="إجمالي التغيرات" 
+            value={stats.totalChanges}
+            label="إجمالي التغيرات"
             testId="stat-changes"
           />
-          <StatCard 
+          <StatCard
             icon={<Target className="h-6 w-6" />}
-            value={stats.totalIndicators} 
-            label="المؤشرات المهنية" 
+            value={stats.totalIndicators}
+            label="المعايير المهنية"
             testId="stat-indicators"
           />
-          <StatCard 
+          <StatCard
             icon={<CheckCircle2 className="h-6 w-6" />}
-            value={stats.completedIndicators} 
-            label="المؤشرات المكتملة" 
+            value={stats.completedIndicators}
+            label="المعايير المكتملة"
             testId="stat-completed"
           />
         </div>
@@ -82,7 +82,7 @@ interface StatCardProps {
 
 function StatCard({ icon, value, label, testId }: StatCardProps) {
   return (
-    <div 
+    <div
       className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground p-5 rounded-lg text-center shadow-sm"
       data-testid={testId}
     >

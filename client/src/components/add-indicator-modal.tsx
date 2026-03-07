@@ -115,7 +115,7 @@ export function AddIndicatorModal({
     onOpenChange(false);
   };
 
-  const stepLabels = ["البيانات الأساسية", "التفاصيل والوزن", "المعايير والشواهد"];
+  const stepLabels = ["البيانات الأساسية", "التفاصيل والوزن", "بنود الإنجاز والشواهد"];
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -301,7 +301,7 @@ export function AddIndicatorModal({
                     className="space-y-4"
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <FormLabel className="font-bold">قائمة المعايير</FormLabel>
+                      <FormLabel className="font-bold">قائمة بنود الإنجاز</FormLabel>
                       <Button
                         type="button"
                         variant="outline"

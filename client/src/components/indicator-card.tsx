@@ -3,9 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { IndicatorWithCriteria } from "@shared/schema";
-import { 
-  Eye, 
-  Plus, 
+import {
+  Eye,
+  Plus,
   Trash2,
   FileText,
   CheckCircle2
@@ -19,12 +19,12 @@ interface IndicatorCardProps {
   onToggleCriteria?: (indicatorId: string, criteriaId: string, completed: boolean) => void;
 }
 
-export function IndicatorCard({ 
-  indicator, 
-  onAddWitness, 
-  onViewDetails, 
+export function IndicatorCard({
+  indicator,
+  onAddWitness,
+  onViewDetails,
   onDelete,
-  onToggleCriteria 
+  onToggleCriteria
 }: IndicatorCardProps) {
   const getStatusBadge = () => {
     switch (indicator.status) {
@@ -53,7 +53,7 @@ export function IndicatorCard({
   const totalCriteria = indicator.criteria?.length || 0;
 
   return (
-    <Card 
+    <Card
       className="p-5 border-2 border-border bg-secondary/30 hover:border-primary hover:shadow-md transition-all duration-300 hover:-translate-y-1"
       data-testid={`card-indicator-${indicator.id}`}
     >
@@ -63,32 +63,32 @@ export function IndicatorCard({
         </h3>
         {getStatusBadge()}
       </div>
-      
+
       <div className="text-center bg-card p-3 rounded-md border border-border mb-4" data-testid={`text-witness-count-${indicator.id}`}>
         <div className="flex items-center justify-center gap-2 text-muted-foreground">
           <FileText className="h-4 w-4" />
           <span>الشواهد المرفقة: <strong className="text-foreground">{indicator.witnessCount || 0}</strong></span>
         </div>
       </div>
-      
+
       {indicator.criteria && indicator.criteria.length > 0 && (
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-muted-foreground">المعايير</span>
+            <span className="text-sm font-medium text-muted-foreground">بنود الإنجاز</span>
             <span className="text-xs text-muted-foreground">
               {completedCriteria} / {totalCriteria}
             </span>
           </div>
           <ul className="space-y-2">
             {indicator.criteria.map((criterion) => (
-              <li 
-                key={criterion.id} 
+              <li
+                key={criterion.id}
                 className="flex items-center gap-3 py-2 px-3 bg-card rounded-md border border-border/50"
                 data-testid={`criteria-item-${criterion.id}`}
               >
-                <Checkbox 
+                <Checkbox
                   checked={criterion.isCompleted || false}
-                  onCheckedChange={(checked) => 
+                  onCheckedChange={(checked) =>
                     onToggleCriteria?.(indicator.id, criterion.id, checked as boolean)
                   }
                   data-testid={`checkbox-criteria-${criterion.id}`}
@@ -104,10 +104,10 @@ export function IndicatorCard({
           </ul>
         </div>
       )}
-      
+
       <div className="flex flex-wrap gap-2">
-        <Button 
-          size="sm" 
+        <Button
+          size="sm"
           onClick={() => onAddWitness?.(indicator.id)}
           className="flex-1 gap-1"
           data-testid={`button-add-witness-${indicator.id}`}
@@ -115,8 +115,8 @@ export function IndicatorCard({
           <Plus className="h-4 w-4" />
           إضافة شاهد
         </Button>
-        <Button 
-          size="sm" 
+        <Button
+          size="sm"
           variant="outline"
           onClick={() => onViewDetails?.(indicator.id)}
           className="gap-1"
@@ -125,8 +125,8 @@ export function IndicatorCard({
           <Eye className="h-4 w-4" />
           عرض
         </Button>
-        <Button 
-          size="icon" 
+        <Button
+          size="icon"
           variant="ghost"
           onClick={() => onDelete?.(indicator.id)}
           className="text-destructive hover:text-destructive hover:bg-destructive/10"

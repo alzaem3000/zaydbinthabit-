@@ -225,11 +225,11 @@ export function AddWitnessModal({
                 name="criteriaId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="font-bold text-primary">المعيار المرتبط (اختياري)</FormLabel>
+                    <FormLabel className="font-bold text-primary">بند الإنجاز المرتبط (اختياري)</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger data-testid="select-criteria">
-                          <SelectValue placeholder="اختر المعيار" />
+                          <SelectValue placeholder="اختر بند الإنجاز" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>

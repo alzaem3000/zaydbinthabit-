@@ -83,7 +83,7 @@ const indicatorIcons: Record<string, React.ReactNode> = {
 };
 
 const getIndicatorIcon = (title: string): React.ReactNode => {
-  return indicatorIcons[title] || <Target className="h-6 w-6" />;
+  return <Award className="h-6 w-6" />;
 };
 
 export default function PrincipalDashboard() {
@@ -415,64 +415,7 @@ export default function PrincipalDashboard() {
           )}
         </div>
 
-        {/* Stats Cards (Keeping these for quick overview but adding more context) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 hidden">
-          <Card data-testid="card-stat-teachers">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-                  <Users className="h-6 w-6 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{stats?.totalTeachers || 0}</p>
-                  <p className="text-sm text-muted-foreground">إجمالي المعلمين</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
 
-          <Card data-testid="card-stat-pending">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-900 flex items-center justify-center">
-                  <Clock className="h-6 w-6 text-amber-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{stats?.pendingApprovals || 0}</p>
-                  <p className="text-sm text-muted-foreground">طلبات معلقة</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card data-testid="card-stat-approved">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
-                  <CheckCircle2 className="h-6 w-6 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{stats?.approvedIndicators || 0}</p>
-                  <p className="text-sm text-muted-foreground">مؤشرات معتمدة</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card data-testid="card-stat-indicators">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center">
-                  <BarChart3 className="h-6 w-6 text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{stats?.totalIndicators || 0}</p>
-                  <p className="text-sm text-muted-foreground">إجمالي المؤشرات</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
 
         {/* Main Content */}
         <Tabs defaultValue="pending" className="space-y-4">
@@ -571,7 +514,7 @@ export default function PrincipalDashboard() {
                                 <div className="flex items-center gap-2 flex-wrap">
                                   {getStatusBadge(signature.indicator?.status || "pending")}
                                   <span className="text-xs text-muted-foreground">
-                                    {sigCriteria.length} معايير
+                                    {sigCriteria.length} بند إنجاز
                                   </span>
                                 </div>
                               </div>
@@ -579,7 +522,7 @@ export default function PrincipalDashboard() {
 
                             <div className="mb-4">
                               <div className="flex items-center justify-between mb-1.5">
-                                <span className="text-xs text-muted-foreground">{sigCompleted} / {sigCriteria.length} معيار</span>
+                                <span className="text-xs text-muted-foreground">{sigCompleted} / {sigCriteria.length} بند إنجاز</span>
                                 <span className={`text-xs font-bold ${sigPct === 100 ? "text-green-600" : "text-muted-foreground"}`}>{sigPct}%</span>
                               </div>
                               <Progress value={sigPct} className="h-2" />
@@ -665,7 +608,7 @@ export default function PrincipalDashboard() {
                                 {teacher.firstName} {teacher.lastName}
                               </p>
                               <p className="text-sm text-muted-foreground">
-                                {teacher.indicatorCount} مؤشر • {teacher.completedCount} مكتمل
+                                {teacher.indicatorCount} معيار • {teacher.completedCount} مكتمل
                               </p>
                             </div>
                             {teacher.pendingApprovalCount > 0 && (
@@ -714,8 +657,8 @@ export default function PrincipalDashboard() {
                   <CardTitle className="flex items-center gap-2">
                     <BookOpen className="h-5 w-5" />
                     {selectedTeacher
-                      ? `مؤشرات ${selectedTeacher.firstName} ${selectedTeacher.lastName}`
-                      : "اختر معلماً لعرض مؤشراته"}
+                      ? `معايير ${selectedTeacher.firstName} ${selectedTeacher.lastName}`
+                      : "اختر معلماً لعرض معاييره"}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -724,13 +667,13 @@ export default function PrincipalDashboard() {
                       <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-muted/50 flex items-center justify-center">
                         <Eye className="h-12 w-12 opacity-30" />
                       </div>
-                      <p className="text-lg font-medium mb-2">اختر معلماً لعرض مؤشراته وأعماله</p>
+                      <p className="text-lg font-medium mb-2">اختر معلماً لعرض معاييره وأعماله</p>
                       <p className="text-sm">اختر معلماً من القائمة لعرض التفاصيل</p>
                     </div>
                   ) : (
                     <Tabs defaultValue="indicators" className="space-y-4">
                       <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
-                        <TabsTrigger value="indicators">المؤشرات</TabsTrigger>
+                        <TabsTrigger value="indicators">المعايير</TabsTrigger>
                         <TabsTrigger value="nafes">أعمال نافس</TabsTrigger>
                       </TabsList>
 
@@ -740,8 +683,8 @@ export default function PrincipalDashboard() {
                             <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-muted/50 flex items-center justify-center">
                               <BookOpen className="h-12 w-12 opacity-30" />
                             </div>
-                            <p className="text-lg font-medium mb-2">لا توجد مؤشرات</p>
-                            <p className="text-sm">لم يضف هذا المعلم أي مؤشرات بعد</p>
+                            <p className="text-lg font-medium mb-2">لا توجد معايير</p>
+                            <p className="text-sm">لم يضف هذا المعلم أي معايير بعد</p>
                           </div>
                         ) : (
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -785,7 +728,7 @@ export default function PrincipalDashboard() {
 
                                     <div className="mb-4">
                                       <div className="flex items-center justify-between mb-1.5">
-                                        <span className="text-xs text-muted-foreground">{completedCriteria} / {totalCriteria} معيار</span>
+                                        <span className="text-xs text-muted-foreground">{completedCriteria} / {totalCriteria} بند إنجاز</span>
                                         <span className={`text-xs font-bold ${pct === 100 ? "text-green-600" : "text-muted-foreground"}`}>{pct}%</span>
                                       </div>
                                       <Progress value={pct} className="h-2" />
@@ -1152,7 +1095,7 @@ export default function PrincipalDashboard() {
               ؟
             </p>
             <p className="text-sm text-destructive mt-2">
-              سيتم حذف جميع بيانات المعلم بما في ذلك المؤشرات والشواهد. لا يمكن التراجع عن هذا الإجراء.
+              سيتم حذف جميع بيانات المعلم بما في ذلك المعايير والشواهد. لا يمكن التراجع عن هذا الإجراء.
             </p>
           </div>
           <DialogFooter className="gap-2">
@@ -1246,7 +1189,7 @@ export default function PrincipalDashboard() {
         onClose={() => setShowEvidenceReview(false)}
         indicatorTitle={selectedWitness?.indicatorId ? teacherIndicators.find(i => i.id === selectedWitness.indicatorId)?.title || "" : ""}
         teacherName={selectedTeacher ? `${selectedTeacher.firstName} ${selectedTeacher.lastName}` : ""}
-        fileUrl={selectedWitness ? `/api/witnesses/${selectedWitness.id}/download` : ""}
+        fileUrl={selectedWitness?.fileUrl || ""}
         onApprove={() => {
           if (selectedWitness?.indicatorId) {
             const signature = pendingSignatures.find(s => s.indicatorId === selectedWitness.indicatorId);

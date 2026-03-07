@@ -37,8 +37,8 @@ export function EvidenceReviewModal({
     : PERFORMANCE_STANDARDS;
 
   const standard = standards.find(s => indicatorTitle.includes(s.title)) || standards[0];
-  const isImage = fileUrl.match(/\.(jpg|jpeg|png|gif)$/i);
-  const isPdf = fileUrl.match(/\.pdf$/i);
+  const isImage = fileUrl.match(/\.(jpg|jpeg|png|gif)$/i) || fileUrl.startsWith('data:image/');
+  const isPdf = fileUrl.match(/\.pdf$/i) || fileUrl.startsWith('data:application/pdf');
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -141,7 +141,7 @@ export function EvidenceReviewModal({
               <div className="space-y-4">
                 <p className="text-sm font-bold flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-primary" />
-                  المعايير المطلوبة لهذا المؤشر:
+                  بنود الإنجاز المطلوبة لهذا المؤشر:
                 </p>
                 <div className="space-y-3">
                   {standard.suggestedEvidence.map((evidence, idx) => (
